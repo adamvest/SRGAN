@@ -1,4 +1,4 @@
 *.pyc
 *.pth
 myjob*
-test.sh
+*.txt
