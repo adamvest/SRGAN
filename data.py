@@ -39,12 +39,10 @@ class ImagenetDataset(Dataset):
         for dname in os.listdir(args.data_path):
             d = os.path.join(args.data_path, dname)
 
-            if not os.path.isdir(d):
-                continue
-
-            for root, _, fnames in os.walk(d):
-                for fname in fnames:
-                    self.images.append(d + fname)
+            if os.path.isdir(d):
+                for root, _, fnames in os.walk(d):
+                    for fname in fnames:
+                        self.images.append(d + "/" + fname)
 
     def __getitem__(self, index):
         path = self.images[index]
