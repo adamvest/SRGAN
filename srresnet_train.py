@@ -23,6 +23,7 @@ else:
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
         collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
+
 num_batches = len(data_loader)
 num_epochs = int(ceil(args.num_iter / num_batches))
 num_iter = 0

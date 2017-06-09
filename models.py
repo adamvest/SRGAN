@@ -50,8 +50,8 @@ class SRGAN():
 
             self.labels.data.resize_(lr_imgs.size(0)).fill_(0)
             sr_imgs = self.generator(lr_imgs)
-            output2 = self.discriminator(sr_imgs.detach())
-            loss_d2 = self.adversarial_loss(output2, self.labels)
+            output = self.discriminator(sr_imgs.detach())
+            loss_d2 = self.adversarial_loss(output, self.labels)
             loss_d2.backward()
             loss_d = loss_d1 + loss_d2
             self.disc_opt.step()

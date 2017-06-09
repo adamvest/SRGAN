@@ -42,7 +42,8 @@ class ImagenetDataset(Dataset):
             if os.path.isdir(d):
                 for root, _, fnames in os.walk(d):
                     for fname in fnames:
-                        self.images.append(d + "/" + fname)
+                        if len(self.images) < args.num_examples:
+                            self.images.append(d + "/" + fname)
 
     def __getitem__(self, index):
         path = self.images[index]
