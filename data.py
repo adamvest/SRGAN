@@ -9,13 +9,42 @@ from torchvision.transforms import ToTensor
 class BSD100Dataset(Dataset):
     def __init__(self, args, transform=None):
         self.transform = transform
-        self.images = []
         self.args = args
+        self.images = []
 
-        for root, _, filenames in os.walk(args.train_path):
+        for root, _, filenames in os.walk(args.data_path):
             for fname in filenames:
                 if "HR" in fname:
                     self.images.append(root + "/" + fname)
+
+    def __getitem__(self, index):
+        path = self.images[index]
+        img = Image.open(path)
+
+        if self.transform != None:
+            img = self.transform(img)
+
+        return img
+
+    def __len__(self):
+        return len(self.images)
+
+
+class ImagenetDataset(Dataset):
+    def __init__(self, args, transform):
+        self.transform = transform
+        self.args = args
+        self.images = []
+
+        for dname in os.listdir(args.data_path):
+            d = os.path.join(args.data_path, dname)
+
+            if not os.path.isdir(d):
+                continue
+
+            for root, _, fnames in os.walk(d):
+                for fname in fnames:
+                    self.images.append(d + fname)
 
     def __getitem__(self, index):
         path = self.images[index]
