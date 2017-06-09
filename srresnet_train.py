@@ -13,7 +13,14 @@ transform = transforms.Compose([
                 data.MultipleRandomCrops(args.crop_size, args.num_crops),
                 data.MultipleImagesToTensor()
             ])
-dataset = data.BSD100Dataset(args, transform=transform)
+
+if args.dataset = "ImageNet":
+    dataset = data.ImagenetDataset(args, transform=transform)
+elif args.dataset = "BSD100":
+    dataset = data.BSD100Dataset(args, transform=transform)
+else:
+    raise ValueError("Dataset not yet implemented")
+
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
         collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
 num_batches = len(data_loader)
