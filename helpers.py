@@ -6,6 +6,7 @@ from torchvision import transforms
 
 
 def custom_collate(batch):
+    print "custom collate"
     to_pil = transforms.ToPILImage()
     to_tensor = transforms.ToTensor()
 

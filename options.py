@@ -6,7 +6,7 @@ class SRGANTrainOptions():
         self.parser = argparse.ArgumentParser()
 
         self.parser.add_argument('--dataset', default="ImageNet", help="dataset to use for training")
-        self.parser.add_argument('--data_path', required=True, help="path to training data")
+        self.parser.add_argument('--data_path', default="./ImageNet", help="path to training data")
         self.parser.add_argument('--num_examples', type=int, default=350000, help="number of training examples to use from ImageNet")
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to train model")
         self.parser.add_argument('--batch_size', type=int, default=1, help="training batch size")
@@ -47,7 +47,7 @@ class SRResNetTrainOptions():
         self.parser = argparse.ArgumentParser()
 
         self.parser.add_argument('--dataset', default="ImageNet", help="dataset to use for training")
-        self.parser.add_argument('--data_path', required=True, help="path to training data")
+        self.parser.add_argument('--data_path', default="./ImageNet", help="path to training data")
         self.parser.add_argument('--num_examples', type=int, default=350000, help="number of training examples to use from ImageNet")
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to train model")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")

@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/adamvest/lib/python")
+
 import time
 import options, data, helpers, models
 from numpy import ceil
@@ -5,6 +8,7 @@ from torch import cuda
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torchvision import transforms
+
 
 args = options.SRResNetTrainOptions().parse()
 
@@ -14,9 +18,9 @@ transform = transforms.Compose([
                 data.MultipleImagesToTensor()
             ])
 
-if args.dataset = "ImageNet":
+if args.dataset == "ImageNet":
     dataset = data.ImagenetDataset(args, transform=transform)
-elif args.dataset = "BSD100":
+elif args.dataset == "BSD100":
     dataset = data.BSD100Dataset(args, transform=transform)
 else:
     raise ValueError("Dataset not yet implemented")
@@ -36,14 +40,15 @@ if args.use_cuda:
 
 for epoch in range(1, num_epochs + 1):
     epoch_start_time = time.time()
-
+    print "here"
     for batch_num, (hr_imgs, lr_imgs) in enumerate(data_loader):
+        print "there"
         num_iter += 1
         hr_imgs = Variable(hr_imgs)
         lr_imgs = Variable(lr_imgs)
 
         srresnet.train_on_batch(epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs)
-
+	print "trained"
         if num_iter >= args.num_iter:
             break
 
@@ -56,3 +61,4 @@ for epoch in range(1, num_epochs + 1):
         break
 
 print "\nSpecified number of update iterations reached, training has ended!\n"
+

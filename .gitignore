@@ -1,5 +1,7 @@
 *.pyc
 *.pth
-myjob*
+*.sh
 *.txt
 ILSVRC*
+ImageNet
+torchvision
