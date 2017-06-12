@@ -50,7 +50,6 @@ class ImagenetDataset(Dataset):
         img = Image.open(path)
 
         if self.transform != None:
-            print "getting item"
             img = self.transform(img)
 
         return img
@@ -69,7 +68,6 @@ class MultipleRandomCrops():
         self.num_crops = num_crops
 
     def __call__(self, img):
-	print "random crop"
         w, h = img.size
         tw, th = self.crop_size
         crops = []
@@ -92,7 +90,6 @@ class MultipleImagesToTensor():
         pass
 
     def __call__(self, imgs):
-	print "to tensor"
         to_tensor = ToTensor()
         imgs = [to_tensor(img) for img in imgs]
         return stack(imgs)

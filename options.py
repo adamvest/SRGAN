@@ -21,7 +21,7 @@ class SRGANTrainOptions():
         self.parser.add_argument('--gen', required=True, help="path to generator weights (use SRResNet weights unless continuing training)")
         self.parser.add_argument('--disc', default="", help="path to discriminator weights")
         self.parser.add_argument('--out_folder', default="./srgan_out", help="directory to store model weights and images")
-        self.parser.add_argument('--num_workers', type=int, default=1, help="number of workers used to load training data")
+        self.parser.add_argument('--num_workers', type=int, default=0, help="number of workers used to load training data")
         self.parser.add_argument('--mode', default="train", help="indicates training mode")
 
     def parse(self):
@@ -61,7 +61,7 @@ class SRResNetTrainOptions():
         self.parser.add_argument('--num_crops', type=int, default=16, help="number of random crops to take from each training example")
         self.parser.add_argument('--model', default="", help="path to model weights")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store super-resolved image")
-        self.parser.add_argument('--num_workers', type=int, default=1, help="number of workers used to load training data")
+        self.parser.add_argument('--num_workers', type=int, default=0, help="number of workers used to load training data")
         self.parser.add_argument('--mode', default="train", help="indicates training mode")
 
     def parse(self):

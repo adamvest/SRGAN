@@ -40,15 +40,14 @@ if args.use_cuda:
 
 for epoch in range(1, num_epochs + 1):
     epoch_start_time = time.time()
-    print "here"
+
     for batch_num, (hr_imgs, lr_imgs) in enumerate(data_loader):
-        print "there"
         num_iter += 1
         hr_imgs = Variable(hr_imgs)
         lr_imgs = Variable(lr_imgs)
 
         srresnet.train_on_batch(epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs)
-	print "trained"
+
         if num_iter >= args.num_iter:
             break
 

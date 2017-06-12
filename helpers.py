@@ -6,7 +6,6 @@ from torchvision import transforms
 
 
 def custom_collate(batch):
-    print "custom collate"
     to_pil = transforms.ToPILImage()
     to_tensor = transforms.ToTensor()
 
@@ -14,9 +13,11 @@ def custom_collate(batch):
     num_images, dim = batch[0].size(0), batch[0].size(2)
 
     for i in range(len(batch)):
-        hr_imgs.append(batch[i])
-        lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
-        lr_imgs.append(stack(lr_batch))
+        #for some reason ImageNet has grayscale images, exclude them
+	if batch[i].size(2) == 3:
+            hr_imgs.append(batch[i])
+            lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
+            lr_imgs.append(stack(lr_batch))
 
     hr_imgs = stack(hr_imgs).view(len(batch) * num_images, 3, dim, dim)
     lr_imgs = stack(lr_imgs).view(len(batch) * num_images, 3, dim/4, dim/4)
@@ -43,9 +44,14 @@ def save_images(model, args):
     to_tensor = transforms.ToTensor()
 
     hr_img = Image.open("./Set5/image_SRF_4/img_003_SRF_4_HR.png")
-    lr_img = Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")
-    sr_img = model(Variable(to_tensor(lr_img).unsqueeze(0)))
-    sr_img = to_pil(sr_img.data[0])
+    lr_img = Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")))
+
+    if args.use_cuda:
+        lr_img = lr_img.cuda()
+
+    sr_img = model(lr_img.unsqueeze(0))
+    sr_img = to_pil(sr_img.data[0].cpu())
+    lr_img = to_pil(lr_img.data.cpu())
 
     hr_img.save("%s/hr_img.png" % args.out_folder)
     lr_img.save("%s/lr_img.png" % args.out_folder)
