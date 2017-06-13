@@ -34,7 +34,7 @@ class ImagenetDataset(Dataset):
     def __init__(self, args, transform):
         self.transform = transform
         self.args = args
-        self.images = []
+        images = []
 
         for dname in os.listdir(args.data_path):
             d = os.path.join(args.data_path, dname)
@@ -42,8 +42,10 @@ class ImagenetDataset(Dataset):
             if os.path.isdir(d):
                 for root, _, fnames in os.walk(d):
                     for fname in fnames:
-                        if len(self.images) < args.num_examples:
-                            self.images.append(d + "/" + fname)
+                        images.append(d + "/" + fname)
+	
+	random.shuffle(images)
+	self.images = images[:args.num_examples]
 
     def __getitem__(self, index):
         path = self.images[index]
