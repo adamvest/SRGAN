@@ -21,6 +21,9 @@ class BSD100Dataset(Dataset):
         path = self.images[index]
         img = Image.open(path)
 
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
         if self.transform != None:
             img = self.transform(img)
 
@@ -43,13 +46,16 @@ class ImagenetDataset(Dataset):
                 for root, _, fnames in os.walk(d):
                     for fname in fnames:
                         images.append(d + "/" + fname)
-	
+
 	random.shuffle(images)
 	self.images = images[:args.num_examples]
 
     def __getitem__(self, index):
         path = self.images[index]
         img = Image.open(path)
+
+        if img.mode != "RGB":
+            img = img.convert("RGB")
 
         if self.transform != None:
             img = self.transform(img)

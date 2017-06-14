@@ -12,19 +12,15 @@ def custom_collate(batch):
     hr_imgs, lr_imgs = [], []
     num_images, dim = batch[0].size(0), batch[0].size(2)
 
-    #for some reason ImageNet has grayscale images, exclude them
-    if batch[0].size(2) == 3:
-	for i in range(len(batch)):
-            hr_imgs.append(batch[i])
-            lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
-            lr_imgs.append(stack(lr_batch))
+    for i in range(len(batch)):
+        hr_imgs.append(batch[i])
+        lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
+        lr_imgs.append(stack(lr_batch))
 
-        hr_imgs = stack(hr_imgs).view(len(batch) * num_images, 3, dim, dim)
-        lr_imgs = stack(lr_imgs).view(len(batch) * num_images, 3, dim/4, dim/4)
+    hr_imgs = stack(hr_imgs).view(len(batch) * num_images, 3, dim, dim)
+    lr_imgs = stack(lr_imgs).view(len(batch) * num_images, 3, dim/4, dim/4)
 
-        return (hr_imgs, lr_imgs)
-
-    return (None, None)
+    return (hr_imgs, lr_imgs)
 
 
 def weights_init(m):
