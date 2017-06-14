@@ -66,6 +66,53 @@ class ImagenetDataset(Dataset):
         return len(self.images)
 
 
+def build_evaluation_dataset(args):
+    to_tensor = ToTensor()
+
+    bsd100_hr_imgs, bsd100_lr_imgs = [], []
+    urban100_hr_imgs, urban100_lr_imgs = [], []
+    set5_hr_imgs, set5_lr_imgs = [], []
+    set14_hr_imgs, set14_lr_imgs = [], []
+
+    for dname in os.listdir(args.test_path):
+        d = os.path.join(args.test_path, dname, "image_SRF_4")
+
+        if os.path.isdir(d):
+            if "BSD100" in d:
+                for root, _, filenames in os.walk(d):
+                    for fname in filenames:
+                        if "HR" in fname:
+                            bsd100_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                        elif "LR" in fname:
+                            bsd100_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+            elif "Urban100" in d:
+                for root, _, filenames in os.walk(d):
+                    for fname in filenames:
+                        if "HR" in fname:
+                            urban100_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                        elif "LR" in fname:
+                            urban100_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+            elif "Set5" in d:
+                for root, _, filenames in os.walk(d):
+                    for fname in filenames:
+                        if "HR" in fname:
+                            set5_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                        elif "LR" in fname:
+                            set5_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+            elif "Set14" in d:
+                for root, _, filenames in os.walk(d):
+                    for fname in filenames:
+                        if "HR" in fname:
+                            set14_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                        elif "LR" in fname:
+                            set14_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+
+    return {"BSD100": (bsd100_hr_imgs, bsd100_lr_imgs),
+            "Urban100": (urban100_hr_imgs, urban100_lr_imgs),
+            "Set5": (set5_hr_imgs, set5_lr_imgs),
+            "Set14": (set14_hr_imgs, set14_lr_imgs)}
+
+
 class MultipleRandomCrops():
     def __init__(self, size, num_crops):
         if isinstance(size, tuple):

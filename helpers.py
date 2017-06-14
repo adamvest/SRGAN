@@ -1,5 +1,5 @@
 from PIL import Image
-from numpy import sqrt
+from numpy import sqrt, log10
 from torch import is_tensor, stack, nn
 from torch.autograd import Variable
 from torchvision import transforms
@@ -35,6 +35,13 @@ def weights_init(m):
         variance = sqrt(2.0 / (fan_in + fan_out))
         m.weight.data.normal_(0.0, variance)
         m.bias.data.fill_(0)
+
+
+def evaluate_psnr(sr_img, hr_img):
+    r = 1
+    mse_loss = nn.MSELoss()
+    mse = mse_loss(sr_img, hr_img)
+    return 10 * log10((r**2) / mse.data[0])
 
 
 def save_images(model, args):

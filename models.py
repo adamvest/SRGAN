@@ -138,9 +138,6 @@ class SRResNet():
 
     def super_resolve(self, lr_img):
         if self.args.mode == "test":
-            if self.args.use_cuda:
-                lr_img = lr_img.cuda()
-
             return self.model(lr_img)
         else:
             raise ValueError("SRResNet not declared in test mode")
