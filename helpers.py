@@ -37,8 +37,7 @@ def weights_init(m):
         m.bias.data.fill_(0)
 
 
-def evaluate_psnr(sr_img, hr_img):
-    r = 1
+def evaluate_psnr(sr_img, hr_img, r=1):
     mse_loss = nn.MSELoss()
     mse = mse_loss(sr_img, hr_img)
     return 10 * log10((r**2) / mse.data[0])
@@ -61,3 +60,13 @@ def save_images(model, args):
     hr_img.save("%s/hr_img.png" % args.out_folder)
     lr_img.save("%s/lr_img.png" % args.out_folder)
     sr_img.save("%s/sr_img.png" % args.out_folder)
+
+
+def save_sr_results(args, dataset_name, sr_imgs):
+    to_pil = transforms.ToPILImage()
+    count = 0
+
+    for sr_img in sr_imgs:
+        count += 1
+        img = to_pil(sr_img)
+        img.save("%s/%s/sr_img_%03d" % (args.out_folder, dataset_name, count))

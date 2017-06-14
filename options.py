@@ -72,9 +72,8 @@ class SRResNetTestOptions():
     def __init__(self):
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument('--model', requried=True, help="path to model weights")
+        self.parser.add_argument('--model', required=True, help="path to model weights")
         self.parser.add_argument('--test_path', default=".", help="path to test sets")
-        self.parser.add_argument('--psnr_file', default="./srresnet_out/psnr_results.txt", help="file to write PSNR results to")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")
         self.parser.add_argument('--mode', default="test", help="indicates testing mode")
 

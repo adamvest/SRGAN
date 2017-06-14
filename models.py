@@ -101,7 +101,7 @@ class SRResNet():
         if args.model == "":
             self.model.apply(helpers.weights_init)
         else:
-            self.model.load_state_dict(torch.load(args.model))
+            self.model.load_state_dict(torch.load(args.model, map_location=lambda storage, loc: storage))
 
         if args.mode == "train":
             if args.use_mse:
