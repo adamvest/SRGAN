@@ -4,6 +4,7 @@ sys.path.append("/home/adamvest/lib/python")
 
 import options, data, models, helpers
 from torch.autograd import Variable
+import resource
 
 
 args = options.SRResNetTestOptions().parse()
@@ -27,4 +28,3 @@ for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
     helpers.save_sr_results(args, dataset_name, sr_imgs)
     total_psnr /= len(lr_imgs)
     print "Dataset " + dataset_name + " PSNR: " + str(total_psnr)
-
