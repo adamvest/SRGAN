@@ -67,8 +67,6 @@ class ImagenetDataset(Dataset):
 
 
 def build_evaluation_dataset(args):
-    to_tensor = ToTensor()
-
     bsd100_hr_imgs, bsd100_lr_imgs = [], []
     urban100_hr_imgs, urban100_lr_imgs = [], []
     set5_hr_imgs, set5_lr_imgs = [], []
@@ -82,36 +80,45 @@ def build_evaluation_dataset(args):
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            bsd100_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            bsd100_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
-                            bsd100_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            bsd100_lr_imgs.append(open_image(root, fname))
             elif "Urban100" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            urban100_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            urban100_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
-                            urban100_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            urban100_lr_imgs.append(open_image(root, fname))
             elif "Set5" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set5_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            set5_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
-                            set5_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            set5_lr_imgs.append(open_image(root, fname))
             elif "Set14" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set14_hr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            set14_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
-                            set14_lr_imgs.append(to_tensor(Image.open(root + "/" + fname)))
+                            set14_lr_imgs.append(open_image(root, fname))
 
     return {"BSD100": (bsd100_hr_imgs, bsd100_lr_imgs),
             "Urban100": (urban100_hr_imgs, urban100_lr_imgs),
             "Set5": (set5_hr_imgs, set5_lr_imgs),
             "Set14": (set14_hr_imgs, set14_lr_imgs)}
 
+def open_image(root, fname):
+    to_tensor = ToTensor()
+
+    img = Image.open(root + "/" + fname)
+
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    return to_tensor(img)
 
 class MultipleRandomCrops():
     def __init__(self, size, num_crops):

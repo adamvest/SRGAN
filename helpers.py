@@ -69,4 +69,4 @@ def save_sr_results(args, dataset_name, sr_imgs):
     for sr_img in sr_imgs:
         count += 1
         img = to_pil(sr_img)
-        img.save("%s/%s/sr_img_%03d" % (args.out_folder, dataset_name, count))
+        img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, count))
