@@ -20,6 +20,7 @@ for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
         sr_img = srresnet.super_resolve(lr_img)
         sr_imgs.append(sr_img.data[0])
         total_psnr += helpers.evaluate_psnr(sr_img, hr_img)
+	del lr_img, hr_img, sr_img
 
     helpers.save_sr_results(args, dataset_name, sr_imgs)
     total_psnr /= len(lr_imgs)
