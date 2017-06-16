@@ -263,13 +263,14 @@ class DiscriminatorBlock(nn.Module):
 
 
 class Vgg54Loss(nn.Module):
-    def __init__(self):
+    def __init__(self, rescaling_factor=12.75):
         super(Vgg54Loss, self).__init__()
         self.vgg = Vgg54()
+        self.rescaling_factor = rescaling_factor
 
     def modified_euclidean_distance(self, x):
         (num_images, _, h, w) = x.size()
-        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h))
+        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h * self.rescaling_factor))
 
     def __call__(self, sr_imgs, hr_imgs):
         sr_feature_maps = self.vgg(sr_imgs)
@@ -290,13 +291,14 @@ class Vgg54(nn.Module):
 
 
 class Vgg22Loss(nn.Module):
-    def __init__(self):
+    def __init__(self, rescaling_factor=12.75):
         super(Vgg22Loss, self).__init__()
         self.vgg = Vgg22()
+        self.rescaling_factor = rescaling_factor
 
     def modified_euclidean_distance(self, x):
         (num_images, _, h, w) = x.size()
-        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h))
+        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h * self.rescaling_factor))
 
     def __call__(self, sr_imgs, hr_imgs):
         sr_feature_maps = self.vgg(sr_imgs)
