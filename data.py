@@ -120,6 +120,7 @@ def open_image(root, fname):
 
     return to_tensor(img)
 
+
 class MultipleRandomCrops():
     def __init__(self, size, num_crops):
         if isinstance(size, tuple):

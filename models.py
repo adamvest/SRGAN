@@ -142,6 +142,9 @@ class SRResNet():
         else:
             raise ValueError("SRResNet not declared in test mode")
 
+    def get_model(self):
+        return self.model
+
     def save_model(self):
         torch.save(self.model.state_dict(), "%s/srresnet_weights.pth" % self.args. out_folder)
 
