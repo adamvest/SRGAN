@@ -1,3 +1,7 @@
+#cluster stuff, remove this
+import sys
+sys.path.append("/home/adamvest/lib/python")
+
 import time
 import options, data, helpers, models
 from numpy import ceil
@@ -5,6 +9,7 @@ from torch import cuda
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torchvision import transforms
+
 
 args = options.SRGANTrainOptions().parse()
 
@@ -14,18 +19,18 @@ transform = transforms.Compose([
                 data.MultipleImagesToTensor()
             ])
 
-if args.dataset = "ImageNet":
+if args.dataset == "ImageNet":
     dataset = data.ImagenetDataset(args, transform=transform)
-elif args.dataset = "BSD100":
+elif args.dataset == "BSD100":
     dataset = data.BSD100Dataset(args, transform=transform)
 else:
     raise ValueError("Dataset not yet implemented")
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
-        collate_fn=helpers.custom_collate)
+        collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
 
-num_batches = len(data_loader)
-num_epochs = int(ceil(args.total_iter / num_batches))
+iter_per_epoch = len(data_loader)
+num_epochs = int(ceil(args.total_iter / iter_per_epoch))
 num_iter = 0
 
 srgan = models.SRGAN(args)
@@ -42,7 +47,7 @@ for epoch in range(1, num_epochs + 1):
         hr_imgs = Variable(hr_imgs)
         lr_imgs = Variable(lr_imgs)
 
-        srgan.train_on_batch(epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs)
+        srgan.train_on_batch(epoch, num_epochs, batch_num, iter_per_epoch, hr_imgs, lr_imgs)
 
         if num_iter == args.iter_to_lr_decay:
             srgan.anneal_lr()
@@ -50,7 +55,7 @@ for epoch in range(1, num_epochs + 1):
             break
 
     srgan.save_models()
-    helpers.save_images(srgan.generator, args)
+    helpers.save_images(srgan.get_generator(), args)
     minutes = int(time.time() - epoch_start_time) / 60
     print "\nEpoch time: " + str(minutes) + " minutes\n"
 

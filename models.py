@@ -12,14 +12,14 @@ class SRGAN():
         if args.gen == "":
             self.generator.apply(helpers.weights_init)
         else:
-            self.generator.load_state_dict(torch.load(args.gen))
+            self.generator.load_state_dict(torch.load(args.gen, map_location=lambda storage, loc: storage))
 
         if args.mode == "train":
             self.discriminator = SRGAN_Discriminator(args)
             if args.disc == "":
                 self.discriminator.apply(helpers.weights_init)
             else:
-                self.discriminator.load_state_dict(torch.load(args.disc))
+                self.discriminator.load_state_dict(torch.load(args.disc, map_location=lambda storage, loc: storage))
 
             self.adversarial_loss = nn.BCELoss()
 
@@ -72,12 +72,12 @@ class SRGAN():
 
     def super_resolve(self, lr_img):
         if self.args.mode == "test":
-            if self.args.use_cuda:
-                lr_img = lr_img.cuda()
-
             return self.generator(lr_img)
         else:
             raise ValueError("SRGAN not declared in test mode")
+
+    def get_generator(self):
+        return self.generator
 
     def save_models(self):
         torch.save(self.generator.state_dict(), "%s/generator_weights.pth" % self.args.out_folder)

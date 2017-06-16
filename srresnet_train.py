@@ -29,8 +29,8 @@ else:
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
         collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
 
-num_batches = len(data_loader)
-num_epochs = int(ceil(args.num_iter / num_batches))
+iter_per_epoch = len(data_loader)
+num_epochs = int(ceil(args.num_iter / iter_per_epoch))
 num_iter = 0
 
 srresnet = models.SRResNet(args)
@@ -47,7 +47,7 @@ for epoch in range(1, num_epochs + 1):
         hr_imgs = Variable(hr_imgs)
         lr_imgs = Variable(lr_imgs)
 
-        srresnet.train_on_batch(epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs)
+        srresnet.train_on_batch(epoch, num_epochs, batch_num, iter_per_epoch, hr_imgs, lr_imgs)
 
         if num_iter >= args.num_iter:
             break
