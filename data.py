@@ -79,36 +79,36 @@ def build_ycbcr_evaluation_dataset(args):
                         if "HR" in fname:
                             bsd100_hr_imgs.append(open_ycbcr_image(root, fname))
                         elif "LR" in fname:
-                            y_img, cbcr_img = open_ycbcr_image(root, fname, split=True)
+                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
                             bsd100_lr_y_imgs.append(y_img)
-                            bsd100_lr_cbcr_imgs.append(cbcr_img)
+                            bsd100_lr_cbcr_imgs.append((cb_img, cr_img))
             elif "Urban100" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
                             urban100_hr_imgs.append(open_ycbcr_image(root, fname))
                         elif "LR" in fname:
-                            y_img, cbcr_img = open_ycbcr_image(root, fname, split=True)
+                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
                             urban100_lr_y_imgs.append(y_img)
-                            urban100_lr_cbcr_imgs.append(cbcr_img)
+                            urban100_lr_cbcr_imgs.append((cb_img, cr_img))
             elif "Set5" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
                             set5_hr_imgs.append(open_ycbcr_image(root, fname))
                         elif "LR" in fname:
-                            y_img, cbcr_img = open_ycbcr_image(root, fname, split=True)
+                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
                             set5_lr_y_imgs.append(y_img)
-                            set5_lr_cbcr_imgs.append(cbcr_img)
+                            set5_lr_cbcr_imgs.append((cb_img, cr_img))
             elif "Set14" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
                             set14_hr_imgs.append(open_ycbcr_image(root, fname))
                         elif "LR" in fname:
-                            y_img, cbcr_img = open_ycbcr_image(root, fname, split=True)
+                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
                             set14_lr_y_imgs.append(y_img)
-                            set14_lr_cbcr_imgs.append(cbcr_img)
+                            set14_lr_cbcr_imgs.append((cb_img, cr_img))
 
     return {"BSD100": (bsd100_hr_imgs, bsd100_lr_y_imgs, bsd100_lr_cbcr_imgs),
             "Urban100": (urban100_hr_imgs, urban100_lr_y_imgs, urban100_lr_cbcr_imgs),
@@ -174,13 +174,12 @@ def open_ycbcr_image(root, fname, get_cbcr=False):
     img = Image.open(root + "/" + fname)
     img = img.convert("YCbCr")
     img = to_tensor(img)
-    y_img = img[0, :, :].unsqueeze(0)
+    y, cb, cr = img[0, :, :].unsqueeze(0), img[1, :, :].unsqueeze(0), img[2, :, :].unsqueeze(0)
 
     if get_cbcr:
-        cbcr_img = img[1:, :, :]
-        return (y_img, cbcr_img)
+        return (y, cb, cr)
 
-    return y_img
+    return y
 
 
 class ExtractYChannel():

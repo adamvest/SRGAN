@@ -76,10 +76,11 @@ def save_images(model, args):
         lr_img = lr_img.convert("YCbCr")
         (lr_img, lr_cb, lr_cr) = lr_img.split()
 
+    lr_img = Variable(to_tensor(lr_img), volatile=True)
+
     if args.use_cuda:
         lr_img = lr_img.cuda()
 
-    lr_img = Variable(to_tensor(lr_img), volatile=True)
     sr_img = model(lr_img.unsqueeze(0))
 
     if args.use_cuda:
@@ -88,11 +89,13 @@ def save_images(model, args):
 
     if not args.use_rgb:
         lr_img = Image.merge("YCbCr", (lr_img, lr_cb, lr_cr))
+        lr_img = lr_img.convert("RGB") #convert for saving
 
         (w, h) = lr_cb.size
         sr_cb = lr_cb.resize((4 * w, 4 * h), Image.BICUBIC)
         sr_cr = lr_cr.resize((4 * w, 4 * h), Image.BICUBIC)
         sr_img = Image.merge("YCbCr", (sr_img, sr_cb, sr_cr))
+        sr_img = sr_img.convert("RGB") #convert for saving
 
     hr_img.save("%s/hr_img.png" % args.out_folder)
     lr_img.save("%s/lr_img.png" % args.out_folder)
@@ -105,9 +108,16 @@ def save_sr_results(args, dataset_name, sr_imgs, sr_cbcr_imgs=None):
 
     for i in range(len(sr_imgs)):
         count += 1
+        print "before:", sr_imgs[i].size()
         img = to_pil(sr_imgs[i])
+        print "after:", img.size
 
         if sr_cbcr_imgs != None:
-            img = Image.merge("YCbCr", (img, sr_cbcr_imgs[i]))
+            print "y size:", img.size
+       	    print "cb size:", sr_cbcr_imgs[i][0].size
+       	    print "cr size:", sr_cbcr_imgs[i][1].size
+
+            img = Image.merge("YCbCr", (img, sr_cbcr_imgs[i][0], sr_cbcr_imgs[i][1]))
+            img = img.convert("RGB")
 
         img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, count))
