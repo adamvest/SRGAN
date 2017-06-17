@@ -8,7 +8,7 @@ class SRGAN():
     def __init__(self, args):
         self.args = args
 
-        self.generator = SRGAN_Generator()
+        self.generator = SRGAN_Generator(args)
         if args.gen == "":
             self.generator.apply(helpers.weights_init)
         else:
@@ -97,7 +97,7 @@ class SRResNet():
     def __init__(self, args):
         self.args = args
 
-        self.model = SRGAN_Generator()
+        self.model = SRGAN_Generator(args)
         if args.model == "":
             self.model.apply(helpers.weights_init)
         else:
@@ -159,13 +159,18 @@ class SRResNet():
 
 
 class SRGAN_Generator(nn.Module):
-    def __init__(self):
+    def __init__(self, args):
         super(SRGAN_Generator, self).__init__()
 
-        sequence = [nn.Conv2d(3, 64, kernel_size=9, padding=4), nn.PReLU()]
+        dim = 3 if args.use_rgb else 1
+
+        sequence = [nn.Conv2d(dim, 64, kernel_size=9, padding=4), nn.PReLU()]
         sequence += [GeneratorResidualSubnet()]
         sequence += [GeneratorPixelShuffleBlock(), GeneratorPixelShuffleBlock()]
-        sequence += [nn.Conv2d(64, 3, kernel_size=9, padding=4)]
+        sequence += [nn.Conv2d(64, dim, kernel_size=9, padding=4)]
+
+        if args.use_tanh:
+            sequence += [nn.Tanh()]
 
         self.generator = nn.Sequential(*sequence)
 
@@ -221,7 +226,9 @@ class SRGAN_Discriminator(nn.Module):
     def __init__(self, args, num_filters=64):
         super(SRGAN_Discriminator, self).__init__()
 
-        conv_sequence = [nn.Conv2d(3, 64, kernel_size=3, padding=1), nn.LeakyReLU(.2, inplace=True),
+        dim = 3 if args.use_rgb else 1
+
+        conv_sequence = [nn.Conv2d(dim, 64, kernel_size=3, padding=1), nn.LeakyReLU(.2, inplace=True),
                             DiscriminatorBlock(num_filters=num_filters, strided=True)]
 
         for i in range(3):

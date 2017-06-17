@@ -8,6 +8,8 @@ class SRGANTrainOptions():
         self.parser.add_argument('--dataset', default="ImageNet", help="dataset to use for training")
         self.parser.add_argument('--data_path', default="./ImageNet", help="path to training data")
         self.parser.add_argument('--num_examples', type=int, default=350000, help="number of training examples to use from ImageNet")
+        self.parser.add_argument('--use_rgb', type=int, default=0, help="whether to use RGB or Y-channel to train")
+        self.parser.add_argument('--use_tanh', type=int, default=0, help="whether to add tanh to end of generator")
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to train model")
         self.parser.add_argument('--batch_size', type=int, default=1, help="training batch size")
         self.parser.add_argument('--use_mse', type=int, default=1, help="use MSE content loss (set to 0 for Vgg54)")
@@ -48,6 +50,8 @@ class SRResNetTrainOptions():
         self.parser.add_argument('--dataset', default="ImageNet", help="dataset to use for training")
         self.parser.add_argument('--data_path', default="./ImageNet", help="path to training data")
         self.parser.add_argument('--num_examples', type=int, default=350000, help="number of training examples to use from ImageNet")
+        self.parser.add_argument('--use_rgb', type=int, default=0, help="whether to use RGB or Y-channel to train")
+        self.parser.add_argument('--use_tanh', type=int, default=0, help="whether to add tanh to end of model")
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to train model")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")
         self.parser.add_argument('--batch_size', type=int, default=1, help="training batch size")
@@ -73,6 +77,7 @@ class SRResNetTestOptions():
 
         self.parser.add_argument('--model', required=True, help="path to model weights")
         self.parser.add_argument('--test_path', default=".", help="path to test sets")
+        self.parser.add_argument('--use_rgb', type=int, default=0, help="whether to use RGB or Y-channel to train")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")
         self.parser.add_argument('--mode', default="test", help="indicates testing mode")
 

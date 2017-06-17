@@ -7,21 +7,48 @@ from torch.autograd import Variable
 
 
 args = options.SRResNetTestOptions().parse()
-datasets = data.build_evaluation_dataset(args)
 srresnet = models.SRResNet(args)
 
-for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
-    total_psnr = 0.0
-    sr_imgs = []
+if args.use_rgb:
+    datasets = data.build_rgb_evaluation_dataset(args)
 
-    for i in range(len(lr_imgs)):
-        lr_img = Variable(lr_imgs[i].unsqueeze(0), volatile=True)
-        hr_img = Variable(hr_imgs[i].unsqueeze(0), volatile=True)
-        sr_img = srresnet.super_resolve(lr_img)
-        sr_imgs.append(sr_img.data[0])
-        total_psnr += helpers.evaluate_psnr(sr_img, hr_img)
-	del lr_img, hr_img, sr_img
+    for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
+        total_psnr = 0.0
+        sr_imgs = []
 
-    helpers.save_sr_results(args, dataset_name, sr_imgs)
-    total_psnr /= len(lr_imgs)
-    print "Dataset " + dataset_name + " PSNR: " + str(total_psnr)
+        for i in range(len(lr_imgs)):
+            lr_img = Variable(lr_imgs[i].unsqueeze(0), volatile=True)
+            hr_img = Variable(hr_imgs[i].unsqueeze(0), volatile=True)
+            sr_img = srresnet.super_resolve(lr_img)
+            sr_imgs.append(sr_img.data[0])
+            total_psnr += helpers.evaluate_psnr(sr_img, hr_img, convert_to_ycbcr=True)
+            del sr_img
+
+        helpers.save_sr_results(args, dataset_name, sr_imgs)
+        total_psnr /= len(lr_imgs)
+        print "Dataset " + dataset_name + " PSNR: " + str(total_psnr)
+else:
+    self.to_pil = transforms.ToPILImage()
+
+    datasets = data.build_ycbcr_evaluation_dataset(args)
+
+    for dataset_name, (hr_y_imgs, lr_y_imgs, lr_cbcr_imgs) in datasets.iteritems():
+        total_psnr = 0.0
+        sr_y_imgs, sr_cbcr_imgs = [], []
+
+        for i in range(len(lr_imgs)):
+            lr_y_img = Variable(lr_y_imgs[i].unsqueeze(0), volatile=True)
+            hr_y_img = Variable(hr_y_imgs[i].unsqueeze(0), volatile=True)
+            sr_y_img = srresnet.super_resolve(lr_y_img)
+            sr_y_imgs.append(sr_y_img.data[0])
+            total_psnr += helpers.evaluate_psnr(sr_y_img, hr_y_img)
+            del sr_y_img
+
+        for cbcr_img in lr_cbcr_imgs:
+            cbcr_img = to_pil(cbcr_img)
+            (w, h) = cbcr_img.size
+            sr_cbcr_imgs.append(cbcr_img.resize((4 * w, 4 * h), Image.BICUBIC))
+
+        helpers.save_sr_results(args, dataset_name, sr_y_imgs, sr_cbcr_imgs)
+        total_psnr /= len(lr_imgs)
+        print "Dataset " + dataset_name + " PSNR: " + str(total_psnr)

@@ -13,11 +13,14 @@ from torchvision import transforms
 
 args = options.SRResNetTrainOptions().parse()
 
-transform = transforms.Compose([
-                transforms.Scale(args.load_size),
-                data.MultipleRandomCrops(args.crop_size, args.num_crops),
-                data.MultipleImagesToTensor()
-            ])
+transform_list = []
+if args.use_rgb:
+    transform_list += [data.CheckImageIsRGB()]
+else:
+    transform_list += [data.ExtractYChannel()]
+
+transform_list += [data.MultipleRandomCrops(args.crop_size, args.num_crops), data.MultipleImagesToTensor()]
+transform = transforms.Compose(transform_list)
 
 if args.dataset == "ImageNet":
     dataset = data.ImagenetDataset(args, transform=transform)
