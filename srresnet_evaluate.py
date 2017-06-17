@@ -46,12 +46,12 @@ else:
             del sr_y_img
 
         for (cb_img, cr_img) in lr_cbcr_imgs:
-            _, w, h = cb_img.size()
             cb_img, cr_img = to_pil(cb_img), to_pil(cr_img)
+            w, h = cb_img.size
             sr_cb_img = cb_img.resize((4 * w, 4 * h), Image.BICUBIC)
             sr_cr_img = cr_img.resize((4 * w, 4 * h), Image.BICUBIC)
             sr_cbcr_imgs.append((sr_cb_img, sr_cr_img))
 
         helpers.save_sr_results(args, dataset_name, sr_y_imgs, sr_cbcr_imgs)
-        total_psnr /= len(lr_imgs)
+        total_psnr /= len(lr_y_imgs)
         print "Dataset " + dataset_name + " PSNR: " + str(total_psnr)

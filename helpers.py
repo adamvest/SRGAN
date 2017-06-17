@@ -104,20 +104,12 @@ def save_images(model, args):
 
 def save_sr_results(args, dataset_name, sr_imgs, sr_cbcr_imgs=None):
     to_pil = transforms.ToPILImage()
-    count = 0
 
     for i in range(len(sr_imgs)):
-        count += 1
-        print "before:", sr_imgs[i].size()
         img = to_pil(sr_imgs[i])
-        print "after:", img.size
 
         if sr_cbcr_imgs != None:
-            print "y size:", img.size
-       	    print "cb size:", sr_cbcr_imgs[i][0].size
-       	    print "cr size:", sr_cbcr_imgs[i][1].size
-
             img = Image.merge("YCbCr", (img, sr_cbcr_imgs[i][0], sr_cbcr_imgs[i][1]))
             img = img.convert("RGB")
 
-        img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, count))
+        img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, i + 1))
