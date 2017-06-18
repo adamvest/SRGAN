@@ -59,7 +59,7 @@ class SRResNetTrainOptions():
         self.parser.add_argument('--tv_weight', type=float, default=2e-8, help="weight for total variation loss when using Vgg loss")
         self.parser.add_argument('--lr', type=float, default=1e-4, help="learning rate for Adam optimizer")
         self.parser.add_argument('--num_iter', type=float, default=1e6, help="number of update iterations to train for")
-        self.parser.add_argument('--load_size', type=int, default=256, help="scale images to this size before cropping")
+        self.parser.add_argument('--min_size', type=int, default=128, help="scale images to this size before cropping")
         self.parser.add_argument('--crop_size', type=int, default=96, help="randomly crop images to this size")
         self.parser.add_argument('--num_crops', type=int, default=16, help="number of random crops to take from each training example")
         self.parser.add_argument('--model', default="", help="path to model weights")

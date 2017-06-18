@@ -3,7 +3,7 @@ from numpy import random
 from PIL import Image
 from torch import stack
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor, ToPILImage
+from torchvision.transforms import ToTensor, ToPILImage, Scale
 
 
 class BSD100Dataset(Dataset):
@@ -36,6 +36,7 @@ class BSD100Dataset(Dataset):
 class ImagenetDataset(Dataset):
     def __init__(self, args, transform):
         self.transform = transform
+        self.scale = Scale(args.min_size)
         self.args = args
         images = []
 
@@ -53,6 +54,10 @@ class ImagenetDataset(Dataset):
     def __getitem__(self, index):
         path = self.images[index]
         img = Image.open(path)
+        (w, h) = img.size
+        
+        if w < 128 or h < 128:
+            img = self.scale(img)
 
         if self.transform != None:
             img = self.transform(img)
