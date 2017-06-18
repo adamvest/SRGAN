@@ -3,7 +3,7 @@ from numpy import random
 from PIL import Image
 from torch import stack
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor, ToPILImage, Scale
+from torchvision.transforms import ToTensor, ToPILImage, Scale, Normalize
 
 
 class BSD100Dataset(Dataset):
@@ -55,7 +55,7 @@ class ImagenetDataset(Dataset):
         path = self.images[index]
         img = Image.open(path)
         (w, h) = img.size
-        
+
         if w < 128 or h < 128:
             img = self.scale(img)
 
@@ -166,16 +166,19 @@ def build_rgb_evaluation_dataset(args):
 
 def open_rgb_image(root, fname):
     to_tensor = ToTensor()
+    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
 
     img = Image.open(root + "/" + fname)
 
     if img.mode != "RGB":
         img = img.convert("RGB")
 
-    return to_tensor(img)
+    return normalize(to_tensor(img))
 
 def open_ycbcr_image(root, fname, get_cbcr=False):
     to_tensor = ToTensor()
+    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
+
     img = Image.open(root + "/" + fname)
     img = img.convert("YCbCr")
     img = to_tensor(img)
@@ -184,7 +187,7 @@ def open_ycbcr_image(root, fname, get_cbcr=False):
     if get_cbcr:
         return (y, cb, cr)
 
-    return y
+    return normalize(y)
 
 
 class ExtractYChannel():
