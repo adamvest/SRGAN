@@ -4,6 +4,7 @@ sys.path.append("/home/adamvest/lib/python")
 
 import options, data, models, helpers
 from PIL import Image
+from torch import cuda
 from torch.autograd import Variable
 from torchvision import transforms
 
