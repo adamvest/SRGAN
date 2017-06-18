@@ -77,6 +77,8 @@ class SRResNetTestOptions():
 
         self.parser.add_argument('--model', required=True, help="path to model weights")
         self.parser.add_argument('--test_path', default=".", help="path to test sets")
+        self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to test model")
+        self.parser.add_argument('--seed', type=int, default=21, help="random seed")
         self.parser.add_argument('--use_rgb', type=int, default=0, help="whether to use RGB or Y-channel to train")
         self.parser.add_argument('--use_tanh', type=int, default=0, help="whether to add tanh to end of model")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")

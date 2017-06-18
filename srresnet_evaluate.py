@@ -10,6 +10,10 @@ from torchvision import transforms
 args = options.SRResNetTestOptions().parse()
 srresnet = models.SRResNet(args)
 
+if args.use_cuda:
+    cuda.manual_seed(args.seed)
+    srresnet.to_cuda()
+
 if args.use_rgb:
     datasets = data.build_rgb_evaluation_dataset(args)
 
