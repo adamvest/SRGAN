@@ -228,7 +228,7 @@ class MultipleRandomCrops():
         crops = []
 
         if tw > w or th > h:
-            return ValueError("Crop size too large")
+            raise ValueError("Crop size too large")
         elif tw == w and th == h:
             return [img] * self.num_crops
 
