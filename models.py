@@ -180,7 +180,7 @@ class SRGAN_Generator(nn.Module):
         self.generator = nn.Sequential(*sequence)
 
     def forward(self, x):
-        return self.generator(x)
+        return torch.clamp(self.generator(x), min=-1, max=1)
 
 class GeneratorPixelShuffleBlock(nn.Module):
     def __init__(self, num_filters=64):

@@ -5,25 +5,6 @@ from torch.autograd import Variable
 from torchvision import transforms
 
 
-def custom_collate(batch):
-    to_pil = transforms.ToPILImage()
-    to_tensor = transforms.ToTensor()
-    normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
-
-    hr_imgs, lr_imgs = [], []
-    num_images, num_channels, dim, _ = batch[0].size()
-
-    for i in range(len(batch)):
-        lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
-        lr_imgs.append(stack(lr_batch))
-        hr_imgs.append(normalize(batch[i]))
-
-    hr_imgs = stack(hr_imgs).view(len(batch) * num_images, num_channels, dim, dim)
-    lr_imgs = stack(lr_imgs).view(len(batch) * num_images, num_channels, dim/4, dim/4)
-
-    return (hr_imgs, lr_imgs)
-
-
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
         m.weight.data.normal_(0.0, 0.02)
@@ -41,20 +22,26 @@ def weights_init(m):
 def evaluate_psnr(sr_img, hr_img, convert_to_ycbcr=False, r=2):
     to_pil = transforms.ToPILImage()
     to_tensor = transforms.ToTensor()
+    normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
 
-    cropped_sr_img = center_crop(to_pil(sr_img.data[0]))
-    cropped_hr_img = center_crop(to_pil(hr_img.data[0]))
+    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0]).clamp_(min = 0, max = 1)))
+    cropped_hr_img = center_crop(to_pil(unnormalize(hr_img.data[0])))
 
     if convert_to_ycbcr:
-        cropped_sr_img = cropped_sr_img.convert("YCbCr")
-        cropped_sr_img, _, _ = cropped_sr_img.split()
-        cropped_hr_img = cropped_hr_img.convert("YCbCr")
-        cropped_hr_img, _, _ = cropped_hr_img.split()
+        cropped_sr_img, _, _ = cropped_sr_img.convert("YCbCr").split()
+        cropped_hr_img, _, _ = cropped_hr_img.convert("YCbCr").split()
+
+    hr_img = Variable(normalize(to_tensor(cropped_hr_img)))
+    sr_img = Variable(normalize(to_tensor(cropped_sr_img)))
 
     mse_loss = nn.MSELoss()
-    mse = mse_loss(Variable(to_tensor(cropped_sr_img)), Variable(to_tensor(cropped_hr_img)))
+    mse = mse_loss(sr_img, hr_img)
 
     return 10 * log10((r**2) / mse.data[0])
+
+
+def unnormalize(img):
+    return img.mul_(.5).add_(.5)
 
 
 def center_crop(img, border=8):
@@ -63,6 +50,16 @@ def center_crop(img, border=8):
     l, r = (w - n_w) / 2, (w + n_w) / 2
     t, b = (h - n_h) / 2, (h + n_h) / 2
     return img.crop((l, t, r, b))
+
+
+def reconstruct_rgb_image(y, cb, cr, resize=False, scale=4):
+    if resize:
+        (w, h) = cb.size
+        cb = cb.resize((scale * w, scale * h), Image.BICUBIC)
+        cr = cr.resize((scale * w, scale * h), Image.BICUBIC)
+
+    img = Image.merge("YCbCr", (y, cb, cr))
+    return img.convert("RGB")
 
 
 def save_images(model, args):
@@ -88,14 +85,8 @@ def save_images(model, args):
         lr_img = to_pil(lr_img.data.cpu())
 
     if not args.use_rgb:
-        lr_img = Image.merge("YCbCr", (lr_img, lr_cb, lr_cr))
-        lr_img = lr_img.convert("RGB") #convert for saving
-
-        (w, h) = lr_cb.size
-        sr_cb = lr_cb.resize((4 * w, 4 * h), Image.BICUBIC)
-        sr_cr = lr_cr.resize((4 * w, 4 * h), Image.BICUBIC)
-        sr_img = Image.merge("YCbCr", (sr_img, sr_cb, sr_cr))
-        sr_img = sr_img.convert("RGB") #convert for saving
+        lr_img = reconstruct_rgb_image(lr_img, lr_cb, lr_cr)
+        sr_img = reconstruct_rgb_image(sr_img, lr_cb, lr_cr, resize=True)
 
     hr_img.save("%s/hr_img.png" % args.out_folder)
     lr_img.save("%s/lr_img.png" % args.out_folder)
@@ -109,7 +100,6 @@ def save_sr_results(args, dataset_name, sr_imgs, sr_cbcr_imgs=None):
         img = to_pil(sr_imgs[i])
 
         if sr_cbcr_imgs != None:
-            img = Image.merge("YCbCr", (img, sr_cbcr_imgs[i][0], sr_cbcr_imgs[i][1]))
-            img = img.convert("RGB")
+            img = reconstruct_rgb_image(img, sr_cbcr_imgs[i][0], sr_cbcr_imgs[i][1])
 
         img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, i + 1))

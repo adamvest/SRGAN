@@ -190,6 +190,25 @@ def open_ycbcr_image(root, fname, get_cbcr=False):
     return normalize(y)
 
 
+def custom_collate(batch):
+    to_pil = ToPILImage()
+    to_tensor = ToTensor()
+    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
+
+    hr_imgs, lr_imgs = [], []
+    num_images, num_channels, dim, _ = batch[0].size()
+
+    for i in range(len(batch)):
+        lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
+        lr_imgs.append(stack(lr_batch))
+        hr_imgs.append(normalize(batch[i]))
+
+    hr_imgs = stack(hr_imgs).view(len(batch) * num_images, num_channels, dim, dim)
+    lr_imgs = stack(lr_imgs).view(len(batch) * num_images, num_channels, dim/4, dim/4)
+
+    return (hr_imgs, lr_imgs)
+
+
 class ExtractYChannel():
     def __init__(self):
         self.to_tensor = ToTensor()
