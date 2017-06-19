@@ -68,58 +68,6 @@ class ImagenetDataset(Dataset):
         return len(self.images)
 
 
-def build_ycbcr_evaluation_dataset(args):
-    bsd100_hr_imgs, bsd100_lr_y_imgs, bsd100_lr_cbcr_imgs = [], [], []
-    urban100_hr_imgs, urban100_lr_y_imgs, urban100_lr_cbcr_imgs = [], [], []
-    set5_hr_imgs, set5_lr_y_imgs, set5_lr_cbcr_imgs = [], [], []
-    set14_hr_imgs, set14_lr_y_imgs, set14_lr_cbcr_imgs = [], [], []
-
-    for dname in os.listdir(args.test_path):
-        d = os.path.join(args.test_path, dname, "image_SRF_4")
-
-        if os.path.isdir(d):
-            if "BSD100" in d:
-                for root, _, filenames in os.walk(d):
-                    for fname in filenames:
-                        if "HR" in fname:
-                            bsd100_hr_imgs.append(open_ycbcr_image(root, fname))
-                        elif "LR" in fname:
-                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
-                            bsd100_lr_y_imgs.append(y_img)
-                            bsd100_lr_cbcr_imgs.append((cb_img, cr_img))
-            elif "Urban100" in d:
-                for root, _, filenames in os.walk(d):
-                    for fname in filenames:
-                        if "HR" in fname:
-                            urban100_hr_imgs.append(open_ycbcr_image(root, fname))
-                        elif "LR" in fname:
-                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
-                            urban100_lr_y_imgs.append(y_img)
-                            urban100_lr_cbcr_imgs.append((cb_img, cr_img))
-            elif "Set5" in d:
-                for root, _, filenames in os.walk(d):
-                    for fname in filenames:
-                        if "HR" in fname:
-                            set5_hr_imgs.append(open_ycbcr_image(root, fname))
-                        elif "LR" in fname:
-                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
-                            set5_lr_y_imgs.append(y_img)
-                            set5_lr_cbcr_imgs.append((cb_img, cr_img))
-            elif "Set14" in d:
-                for root, _, filenames in os.walk(d):
-                    for fname in filenames:
-                        if "HR" in fname:
-                            set14_hr_imgs.append(open_ycbcr_image(root, fname))
-                        elif "LR" in fname:
-                            y_img, cb_img, cr_img = open_ycbcr_image(root, fname, get_cbcr=True)
-                            set14_lr_y_imgs.append(y_img)
-                            set14_lr_cbcr_imgs.append((cb_img, cr_img))
-
-    return {"BSD100": (bsd100_hr_imgs, bsd100_lr_y_imgs, bsd100_lr_cbcr_imgs),
-            "Urban100": (urban100_hr_imgs, urban100_lr_y_imgs, urban100_lr_cbcr_imgs),
-            "Set5": (set5_hr_imgs, set5_lr_y_imgs, set5_lr_cbcr_imgs),
-            "Set14": (set14_hr_imgs, set14_lr_y_imgs, set14_lr_cbcr_imgs)}
-
 def build_rgb_evaluation_dataset(args):
     bsd100_hr_imgs, bsd100_lr_imgs = [], []
     urban100_hr_imgs, urban100_lr_imgs = [], []
@@ -134,37 +82,37 @@ def build_rgb_evaluation_dataset(args):
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            bsd100_hr_imgs.append(open_rgb_image(root, fname))
+                            bsd100_hr_imgs.append(open_image(root, fname, normalize=True))
                         elif "LR" in fname:
-                            bsd100_lr_imgs.append(open_rgb_image(root, fname))
+                            bsd100_lr_imgs.append(open_image(root, fname))
             elif "Urban100" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            urban100_hr_imgs.append(open_rgb_image(root, fname))
+                            urban100_hr_imgs.append(open_image(root, fname, normalize=True))
                         elif "LR" in fname:
-                            urban100_lr_imgs.append(open_rgb_image(root, fname))
+                            urban100_lr_imgs.append(open_image(root, fname))
             elif "Set5" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set5_hr_imgs.append(open_rgb_image(root, fname))
+                            set5_hr_imgs.append(open_image(root, fname, normalize=True))
                         elif "LR" in fname:
-                            set5_lr_imgs.append(open_rgb_image(root, fname))
+                            set5_lr_imgs.append(open_image(root, fname))
             elif "Set14" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set14_hr_imgs.append(open_rgb_image(root, fname))
+                            set14_hr_imgs.append(open_image(root, fname, normalize=True))
                         elif "LR" in fname:
-                            set14_lr_imgs.append(open_rgb_image(root, fname))
+                            set14_lr_imgs.append(open_image(root, fname))
 
     return {"BSD100": (bsd100_hr_imgs, bsd100_lr_imgs),
             "Urban100": (urban100_hr_imgs, urban100_lr_imgs),
             "Set5": (set5_hr_imgs, set5_lr_imgs),
             "Set14": (set14_hr_imgs, set14_lr_imgs)}
 
-def open_rgb_image(root, fname):
+def open_image(root, fname, normalize=False):
     to_tensor = ToTensor()
     normalize = Normalize((.5, .5, .5), (.5, .5, .5))
 
@@ -173,21 +121,10 @@ def open_rgb_image(root, fname):
     if img.mode != "RGB":
         img = img.convert("RGB")
 
-    return normalize(to_tensor(img))
-
-def open_ycbcr_image(root, fname, get_cbcr=False):
-    to_tensor = ToTensor()
-    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
-
-    img = Image.open(root + "/" + fname)
-    img = img.convert("YCbCr")
-    img = to_tensor(img)
-    y, cb, cr = img[0, :, :].unsqueeze(0), img[1, :, :].unsqueeze(0), img[2, :, :].unsqueeze(0)
-
-    if get_cbcr:
-        return (y, cb, cr)
-
-    return normalize(y)
+    if normalize
+        return normalize(to_tensor(img))
+    else:
+        return to_tensor(img)
 
 
 def custom_collate(batch):
@@ -207,18 +144,6 @@ def custom_collate(batch):
     lr_imgs = stack(lr_imgs).view(len(batch) * num_images, num_channels, dim/4, dim/4)
 
     return (hr_imgs, lr_imgs)
-
-
-class ExtractYChannel():
-    def __init__(self):
-        self.to_tensor = ToTensor()
-        self.to_pil = ToPILImage()
-
-    def __call__(self, img):
-        img = img.convert("YCbCr")
-        img = self.to_tensor(img)
-        img = img[0, :, :].unsqueeze(0)
-        return self.to_pil(img)
 
 
 class CheckImageIsRGB():

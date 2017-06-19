@@ -167,20 +167,15 @@ class SRGAN_Generator(nn.Module):
     def __init__(self, args):
         super(SRGAN_Generator, self).__init__()
 
-        dim = 3 if args.use_rgb else 1
-
-        sequence = [nn.Conv2d(dim, 64, kernel_size=9, padding=4), nn.PReLU()]
+        sequence = [nn.Conv2d(3, 64, kernel_size=9, padding=4), nn.PReLU()]
         sequence += [GeneratorResidualSubnet()]
         sequence += [GeneratorPixelShuffleBlock(), GeneratorPixelShuffleBlock()]
-        sequence += [nn.Conv2d(64, dim, kernel_size=9, padding=4)]
-
-        if args.use_tanh:
-            sequence += [nn.Tanh()]
+        sequence += [nn.Conv2d(64, 3, kernel_size=9, padding=4)]
 
         self.generator = nn.Sequential(*sequence)
 
     def forward(self, x):
-        return torch.clamp(self.generator(x), min=-1, max=1)
+        return self.generator(x), min=-1, max=1
 
 class GeneratorPixelShuffleBlock(nn.Module):
     def __init__(self, num_filters=64):
@@ -231,9 +226,7 @@ class SRGAN_Discriminator(nn.Module):
     def __init__(self, args, num_filters=64):
         super(SRGAN_Discriminator, self).__init__()
 
-        dim = 3 if args.use_rgb else 1
-
-        conv_sequence = [nn.Conv2d(dim, 64, kernel_size=3, padding=1), nn.LeakyReLU(.2, inplace=True),
+        conv_sequence = [nn.Conv2d(3, 64, kernel_size=3, padding=1), nn.LeakyReLU(.2, inplace=True),
                             DiscriminatorBlock(num_filters=num_filters, strided=True)]
 
         for i in range(3):

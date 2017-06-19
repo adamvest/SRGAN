@@ -13,14 +13,11 @@ from torchvision import transforms
 
 args = options.SRResNetTrainOptions().parse()
 
-transform_list = []
-if args.use_rgb:
-    transform_list += [data.CheckImageIsRGB()]
-else:
-    transform_list += [data.ExtractYChannel()]
-
-transform_list += [data.MultipleRandomCrops(args.crop_size, args.num_crops), data.MultipleImagesToTensor()]
-transform = transforms.Compose(transform_list)
+transform = transforms.Compose([
+                data.CheckImageIsRGB(),
+                data.MultipleRandomCrops(args.crop_size, args.num_crops),
+                data.MultipleImagesToTensor()
+            ])
 
 if args.dataset == "ImageNet":
     dataset = data.ImagenetDataset(args, transform=transform)
@@ -30,7 +27,7 @@ else:
     raise ValueError("Dataset not yet implemented")
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
-        collate_fn=data.custom_collate, pin_memory=args.use_cuda)
+        collate_fn=data.custom_collate)
 
 iter_per_epoch = len(data_loader)
 num_epochs = int(ceil(args.num_iter / iter_per_epoch))
