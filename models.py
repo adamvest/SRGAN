@@ -117,8 +117,8 @@ class SRResNet():
     def train_on_batch(self, epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs):
         if self.args.mode == "train":
             if self.args.use_cuda:
-                hr_imgs = hr_imgs.cuda()
-                lr_imgs = lr_imgs.cuda()
+                hr_imgs = hr_imgs.cuda(device_id=self.args.device_id)
+                lr_imgs = lr_imgs.cuda(device_id=self.args.device_id)
 
             self.model.zero_grad()
             sr_imgs = self.model(lr_imgs)
@@ -139,7 +139,7 @@ class SRResNet():
     def super_resolve(self, lr_img):
         if self.args.mode == "test":
             if self.args.use_cuda:
-                lr_img = lr_img.cuda()
+                lr_img = lr_img.cuda(device_id=self.args.device_id)
                 sr_img = self.model(lr_img)
                 return sr_img.cpu()
             else:
@@ -154,13 +154,13 @@ class SRResNet():
         torch.save(self.model.state_dict(), "%s/srresnet_weights.pth" % self.args. out_folder)
 
     def to_cuda(self):
-        self.model.cuda()
+        self.model.cuda(device_id=self.args.device_id)
 
         if self.args.mode == "train":
-            self.content_loss.cuda()
+            self.content_loss.cuda(device_id=self.args.device_id)
 
             if not self.args.use_mse:
-                self.tv_loss.cuda()
+                self.tv_loss.cuda(device_id=self.args.device_id)
 
 
 class SRGAN_Generator(nn.Module):
