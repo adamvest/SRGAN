@@ -25,11 +25,11 @@ for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
         lr_img = Variable(lr_imgs[i].unsqueeze(0), volatile=True)
         sr_img = srresnet.super_resolve(lr_img)
         sr_imgs.append(sr_img.data[0])
-        psnr, ssim += helpers.compute_statistics(sr_img, hr_imgs[i])
+        psnr, ssim = helpers.compute_statistics(sr_img, hr_imgs[i])
         total_psnr += psnr
         total_ssim += ssim
         del sr_img
 
     helpers.save_sr_results(args, dataset_name, sr_imgs)
     print "Dataset " + dataset_name + " PSNR: " + str(total_psnr / len(lr_imgs)) + \
-            " SSIM: " + (total_ssim / len(lr_imgs))
+            " SSIM: " + str(total_ssim / len(lr_imgs))

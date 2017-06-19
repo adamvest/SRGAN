@@ -33,7 +33,7 @@ def compute_statistics(sr_img, hr_img, r=2):
     cropped_hr_img = normalize(to_tensor(cropped_hr_img)).numpy()
 
     psnr = measure.compare_psnr(cropped_hr_img, cropped_sr_img, data_range=r)
-    ssim = measure.compare_ssim(cropped_hr_img, cropped_sr_img, data_range=r)
+    ssim = measure.compare_ssim(cropped_hr_img[0], cropped_sr_img[0], data_range=r)
 
     return (psnr, ssim)
 
@@ -78,5 +78,5 @@ def save_sr_results(args, dataset_name, sr_imgs):
     to_pil = transforms.ToPILImage()
 
     for i in range(len(sr_imgs)):
-        img = to_pil(unnormalize(sr_img.clamp(min=-1, max=1)))
+        img = to_pil(unnormalize(sr_imgs[i].clamp(min=-1, max=1)))
         img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, i + 1))
