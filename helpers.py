@@ -1,4 +1,5 @@
 from PIL import Image
+from skimage.measure import compare_psnr, compare_ssim
 from numpy import sqrt, log10
 from torch import is_tensor, stack, nn
 from torch.autograd import Variable
@@ -19,7 +20,7 @@ def weights_init(m):
         m.bias.data.fill_(0)
 
 
-def evaluate_psnr(sr_img, hr_img, convert_to_ycbcr=False, r=2):
+def compute_statistics(sr_img, hr_img, r=2):
     to_pil = transforms.ToPILImage()
     to_tensor = transforms.ToTensor()
     normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
@@ -34,10 +35,10 @@ def evaluate_psnr(sr_img, hr_img, convert_to_ycbcr=False, r=2):
     hr_img = Variable(normalize(to_tensor(cropped_hr_img)))
     sr_img = Variable(normalize(to_tensor(cropped_sr_img)))
 
-    mse_loss = nn.MSELoss()
-    mse = mse_loss(sr_img, hr_img)
+    psnr = compare_psnr(hr_img, sr_img, data_range=r)
+    ssim = compare_ssim(hr_img, sr_img, data_range=r)
 
-    return 10 * log10((r**2) / mse.data[0])
+    return (psnr, ssim)
 
 
 def unnormalize(img):
