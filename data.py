@@ -82,28 +82,28 @@ def build_rgb_evaluation_dataset(args):
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            bsd100_hr_imgs.append(open_image(root, fname, normalize=True))
+                            bsd100_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
                             bsd100_lr_imgs.append(open_image(root, fname))
             elif "Urban100" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            urban100_hr_imgs.append(open_image(root, fname, normalize=True))
+                            urban100_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
                             urban100_lr_imgs.append(open_image(root, fname))
             elif "Set5" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set5_hr_imgs.append(open_image(root, fname, normalize=True))
+                            set5_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
                             set5_lr_imgs.append(open_image(root, fname))
             elif "Set14" in d:
                 for root, _, filenames in os.walk(d):
                     for fname in filenames:
                         if "HR" in fname:
-                            set14_hr_imgs.append(open_image(root, fname, normalize=True))
+                            set14_hr_imgs.append(open_image(root, fname))
                         elif "LR" in fname:
                             set14_lr_imgs.append(open_image(root, fname))
 
@@ -112,19 +112,15 @@ def build_rgb_evaluation_dataset(args):
             "Set5": (set5_hr_imgs, set5_lr_imgs),
             "Set14": (set14_hr_imgs, set14_lr_imgs)}
 
-def open_image(root, fname, normalize=False):
+def open_image(root, fname):
     to_tensor = ToTensor()
-    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
 
     img = Image.open(root + "/" + fname)
 
     if img.mode != "RGB":
         img = img.convert("RGB")
 
-    if normalize
-        return normalize(to_tensor(img))
-    else:
-        return to_tensor(img)
+    return to_tensor(img)
 
 
 def custom_collate(batch):

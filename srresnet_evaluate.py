@@ -23,10 +23,9 @@ for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
 
     for i in range(len(lr_imgs)):
         lr_img = Variable(lr_imgs[i].unsqueeze(0), volatile=True)
-        hr_img = Variable(hr_imgs[i].unsqueeze(0), volatile=True)
         sr_img = srresnet.super_resolve(lr_img)
         sr_imgs.append(sr_img.data[0])
-        psnr, ssim += helpers.compute_statistics(sr_y_img, hr_y_img)
+        psnr, ssim += helpers.compute_statistics(sr_img, hr_imgs[i])
         total_psnr += psnr
         total_ssim += ssim
         del sr_img

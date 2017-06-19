@@ -22,13 +22,15 @@ def weights_init(m):
 
 def compute_statistics(sr_img, hr_img, r=2):
     to_pil = transforms.ToPILImage()
+    to_tensor = transforms.ToTensor()
+    normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
 
     cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0])))
-    cropped_hr_img = center_crop(to_pil(unnormalize(hr_img.data[0])))
+    cropped_hr_img = center_crop(to_pil(hr_img))
     cropped_sr_img, _, _ = cropped_sr_img.convert("YCbCr").split()
     cropped_hr_img, _, _ = cropped_hr_img.convert("YCbCr").split()
-    cropped_hr_img = numpy.array(cropped_hr_img)
-    cropped_sr_img = numpy.array(cropped_sr_img)
+    cropped_sr_img = normalize(to_tensor(cropped_sr_img)).numpy()
+    cropped_hr_img = normalize(to_tensor(cropped_hr_img)).numpy()
 
     psnr = measure.compare_psnr(cropped_hr_img, cropped_sr_img, data_range=r)
     ssim = measure.compare_ssim(cropped_hr_img, cropped_sr_img, data_range=r)
@@ -64,7 +66,7 @@ def save_images(model, args):
         sr_img = sr_img.data[0].cpu()
         lr_img = lr_img.data.cpu()
 
-    sr_img = to_pil(sr_img)
+    sr_img = to_pil(unnormalize(sr_img.clamp(min=-1, max=1)))
     lr_img = to_pil(lr_img)
 
     hr_img.save("%s/hr_img.png" % args.out_folder)
@@ -76,5 +78,5 @@ def save_sr_results(args, dataset_name, sr_imgs):
     to_pil = transforms.ToPILImage()
 
     for i in range(len(sr_imgs)):
-        img = to_pil(sr_imgs[i])
+        img = to_pil(unnormalize(sr_img.clamp(min=-1, max=1)))
         img.save("%s/%s/sr_img_%03d.png" % (args.out_folder, dataset_name, i + 1))
