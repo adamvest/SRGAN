@@ -30,7 +30,7 @@ else:
     raise ValueError("Dataset not yet implemented")
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
-        collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
+        collate_fn=data.custom_collate, pin_memory=args.use_cuda)
 
 iter_per_epoch = len(data_loader)
 num_epochs = int(ceil(args.num_iter / iter_per_epoch))

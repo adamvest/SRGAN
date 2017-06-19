@@ -1,5 +1,5 @@
 from PIL import Image
-from skimage.measure import compare_psnr, compare_ssim
+from skimage import measure
 from numpy import sqrt, log10
 from torch import is_tensor, stack, nn
 from torch.autograd import Variable
@@ -25,7 +25,7 @@ def compute_statistics(sr_img, hr_img, r=2):
     to_tensor = transforms.ToTensor()
     normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
 
-    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0]).clamp_(min = 0, max = 1)))
+    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0])))
     cropped_hr_img = center_crop(to_pil(unnormalize(hr_img.data[0])))
 
     if convert_to_ycbcr:
@@ -35,8 +35,8 @@ def compute_statistics(sr_img, hr_img, r=2):
     hr_img = Variable(normalize(to_tensor(cropped_hr_img)))
     sr_img = Variable(normalize(to_tensor(cropped_sr_img)))
 
-    psnr = compare_psnr(hr_img, sr_img, data_range=r)
-    ssim = compare_ssim(hr_img, sr_img, data_range=r)
+    psnr = measure.compare_psnr(hr_img, sr_img, data_range=r)
+    ssim = measure.compare_ssim(hr_img, sr_img, data_range=r)
 
     return (psnr, ssim)
 
