@@ -27,7 +27,7 @@ class SRGAN():
                 self.content_loss = nn.MSELoss()
             elif args.content_loss == "l1":
                 self.content_loss = L1Loss()
-            elif args.content_loss == "vgg"
+            elif args.content_loss == "vgg":
                 self.content_loss = Vgg54Loss()
             else:
                 raise NotImplementedError("Chosen content loss function not yet implemented")
@@ -112,7 +112,7 @@ class SRResNet():
                 self.content_loss = nn.MSELoss()
             elif args.content_loss == "l1":
                 self.content_loss = L1Loss()
-            elif args.content_loss == "vgg"
+            elif args.content_loss == "vgg":
                 self.content_loss = Vgg22WithTotalVariation(args.tv_weight)
             else:
                 raise NotImplementedError("Chosen content loss function not yet implemented")
