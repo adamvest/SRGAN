@@ -14,7 +14,7 @@ from torchvision import transforms
 args = options.SRGANTrainOptions().parse()
 
 transform = transforms.Compose([
-                transforms.Scale(args.load_size),
+                data.CheckImageIsRGB(),
                 data.MultipleRandomCrops(args.crop_size, args.num_crops),
                 data.MultipleImagesToTensor()
             ])
@@ -27,7 +27,7 @@ else:
     raise ValueError("Dataset not yet implemented")
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
-        collate_fn=helpers.custom_collate, pin_memory=args.use_cuda)
+        collate_fn=data.custom_collate)
 
 iter_per_epoch = len(data_loader)
 num_epochs = int(ceil(args.total_iter / iter_per_epoch))
