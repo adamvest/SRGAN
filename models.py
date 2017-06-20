@@ -23,10 +23,14 @@ class SRGAN():
 
             self.adversarial_loss = nn.BCELoss()
 
-            if args.use_mse:
+            if args.content_loss == "mse":
                 self.content_loss = nn.MSELoss()
-            else:
+            elif args.content_loss == "l1":
+                self.content_loss = L1Loss()
+            elif args.content_loss == "vgg"
                 self.content_loss = Vgg54Loss()
+            else:
+                raise NotImplementedError("Chosen content loss function not yet implemented")
 
             self.gen_opt = torch.optim.Adam(self.generator.parameters(), lr=args.lr)
             self.disc_opt = torch.optim.Adam(self.discriminator.parameters(), lr=args.lr)
@@ -104,10 +108,14 @@ class SRResNet():
             self.model.load_state_dict(torch.load(args.model, map_location=lambda storage, loc: storage))
 
         if args.mode == "train":
-            if args.use_mse:
+            if args.content_loss == "mse":
                 self.content_loss = nn.MSELoss()
-            else:
+            elif args.content_loss == "l1":
+                self.content_loss = L1Loss()
+            elif args.content_loss == "vgg"
                 self.content_loss = Vgg22WithTotalVariation(args.tv_weight)
+            else:
+                raise NotImplementedError("Chosen content loss function not yet implemented")
 
             self.opt = torch.optim.Adam(self.model.parameters(), lr=args.lr)
         else:
@@ -152,9 +160,6 @@ class SRResNet():
 
         if self.args.mode == "train":
             self.content_loss.cuda(device_id=self.args.device_id)
-
-            if not self.args.use_mse:
-                self.tv_loss.cuda(device_id=self.args.device_id)
 
 
 class SRGAN_Generator(nn.Module):
@@ -259,6 +264,14 @@ class DiscriminatorBlock(nn.Module):
 
     def forward(self, x):
         return self.block(x)
+
+
+class L1Loss(nn.Module):
+    def __init__(self):
+        super(L1Loss, self).__init__()
+
+    def __call__(self, sr_imgs, hr_imgs):
+        return torch.mean(torch.abs(sr_imgs - hr_imgs))
 
 
 class Vgg54Loss(nn.Module):

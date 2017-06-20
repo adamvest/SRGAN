@@ -24,7 +24,7 @@ if args.dataset == "ImageNet":
 elif args.dataset == "BSD100":
     dataset = data.BSD100Dataset(args, transform=transform)
 else:
-    raise ValueError("Dataset not yet implemented")
+    raise NotImplementedError("Dataset not yet implemented")
 
 data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
         collate_fn=data.custom_collate)
