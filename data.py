@@ -21,8 +21,8 @@ class BSD100Dataset(Dataset):
         path = self.images[index]
         img = Image.open(path)
 
-        if img.mode != "RGB":
-            img = img.convert("RGB")
+        if w < 128 or h < 128:
+            img = self.scale(img)
 
         if self.transform != None:
             img = self.transform(img)
@@ -68,7 +68,7 @@ class ImagenetDataset(Dataset):
         return len(self.images)
 
 
-def build_rgb_evaluation_dataset(args):
+def build_evaluation_dataset(args):
     bsd100_hr_imgs, bsd100_lr_imgs = [], []
     urban100_hr_imgs, urban100_lr_imgs = [], []
     set5_hr_imgs, set5_lr_imgs = [], []

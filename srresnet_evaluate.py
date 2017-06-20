@@ -15,7 +15,7 @@ if args.use_cuda:
     cuda.manual_seed(args.seed)
     srresnet.to_cuda()
 
-datasets = data.build_rgb_evaluation_dataset(args)
+datasets = data.build_evaluation_dataset(args)
 
 for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
     total_psnr, total_ssim = 0.0, 0.0
