@@ -107,8 +107,7 @@ class SRResNet():
             if args.use_mse:
                 self.content_loss = nn.MSELoss()
             else:
-                self.content_loss = Vgg54Loss()
-                self.tv_loss = TotalVariationLoss()
+                self.content_loss = Vgg22WithTotalVariation(args.tv_weight)
 
             self.opt = torch.optim.Adam(self.model.parameters(), lr=args.lr)
         else:
@@ -122,12 +121,7 @@ class SRResNet():
 
             self.model.zero_grad()
             sr_imgs = self.model(lr_imgs)
-
-            if self.args.use_mse:
-                loss = self.content_loss(sr_imgs, hr_imgs)
-            else:
-                loss = self.content_loss(sr_imgs, hr_imgs) + self.args.tv_weight * self.tv_loss(sr_imgs)
-
+            loss = self.content_loss(sr_imgs, hr_imgs)
             loss.backward()
             self.opt.step()
 
@@ -275,7 +269,7 @@ class Vgg54Loss(nn.Module):
 
     def modified_euclidean_distance(self, x):
         (num_images, _, h, w) = x.size()
-        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h * self.rescaling_factor))
+        return torch.sum(torch.pow(x, 2)).mul(1.0 / (num_images * w * h * self.rescaling_factor))
 
     def __call__(self, sr_imgs, hr_imgs):
         sr_feature_maps = self.vgg(sr_imgs)
@@ -295,6 +289,15 @@ class Vgg54(nn.Module):
         return self.modified_pretrained(x)
 
 
+class Vgg22WithTotalVariation(nn.Module):
+    def __init__(self, tv_weight):
+        super(Vgg22WithTotalVariation, self).__init__()
+        self.vgg_loss = Vgg22Loss()
+        self.tv_loss = TotalVariationLoss(tv_weight)
+
+    def __call__(self, sr_imgs, hr_imgs):
+        return self.vgg_loss(sr_imgs, hr_imgs) + self.tv_loss(sr_imgs)
+
 class Vgg22Loss(nn.Module):
     def __init__(self, rescaling_factor=12.75):
         super(Vgg22Loss, self).__init__()
@@ -303,7 +306,7 @@ class Vgg22Loss(nn.Module):
 
     def modified_euclidean_distance(self, x):
         (num_images, _, h, w) = x.size()
-        return torch.sum(torch.pow(x, 2)).mul_(1.0 / (num_images * w * h * self.rescaling_factor))
+        return torch.sum(torch.pow(x, 2)).mul(1.0 / (num_images * w * h * self.rescaling_factor))
 
     def __call__(self, sr_imgs, hr_imgs):
         sr_feature_maps = self.vgg(sr_imgs)
@@ -322,12 +325,12 @@ class Vgg22(nn.Module):
     def forward(self, x):
         return self.modified_pretrained(x)
 
-
 class TotalVariationLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, tv_weight):
         super(TotalVariationLoss, self).__init__()
+        self.tv_weight = tv_weight
 
     def __call__(self, imgs):
         pixel_diff1 = imgs[:, :, 1:, :] - imgs[:, :, :-1, :]
         pixel_diff2 = imgs[:, :, :, 1:] - imgs[:, :, :, :-1]
-        return torch.sum(torch.abs(pixel_diff1)) + torch.sum(torch.abs(pixel_diff2))
+        return self.tv_weight * torch.sum(torch.abs(pixel_diff1)) + torch.sum(torch.abs(pixel_diff2))
