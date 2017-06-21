@@ -23,9 +23,8 @@ def weights_init(m):
 def compute_statistics(sr_img, hr_img, r=2):
     to_pil = transforms.ToPILImage()
     to_tensor = transforms.ToTensor()
-    normalize = transforms.Normalize((.5, .5, .5), (.5, .5, .5))
 
-    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0])))
+    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0].clamp(-1, 1))))
     cropped_hr_img = center_crop(to_pil(hr_img))
     sr_y, _, _ = cropped_sr_img.convert("YCbCr").split()
     hr_y, _, _ = cropped_hr_img.convert("YCbCr").split()
@@ -39,7 +38,11 @@ def compute_statistics(sr_img, hr_img, r=2):
 
 
 def unnormalize(img):
-    return img.mul_(.5).add_(.5)
+    return img.mul(.5).add(.5)
+
+
+def normalize(img):
+    return img.sub(.5).div(.5)
 
 
 def center_crop(img, border=8):

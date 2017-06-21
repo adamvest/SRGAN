@@ -129,7 +129,8 @@ class SRResNet():
 
             self.model.zero_grad()
             sr_imgs = self.model(lr_imgs)
-            loss = self.content_loss(sr_imgs, hr_imgs)
+            normalized_sr_imgs = helpers.normalize(sr_imgs)
+            loss = self.content_loss(normalized_sr_imgs, hr_imgs)
             loss.backward()
             self.opt.step()
 
@@ -142,10 +143,9 @@ class SRResNet():
         if self.args.mode == "test":
             if self.args.use_cuda:
                 lr_img = lr_img.cuda(device_id=self.args.device_id)
-                sr_img = self.model(lr_img)
-                return sr_img.cpu()
+                return helpers.normalize(self.model(lr_img).cpu())
             else:
-                return self.model(lr_img)
+                return helpers.normalize(self.model(lr_img))
         else:
             raise ValueError("SRResNet not declared in test mode")
 
@@ -270,6 +270,7 @@ class DiscriminatorBlock(nn.Module):
 
     def forward(self, x):
         return self.block(x)
+
 
 '''
 Fix this for autograd
