@@ -14,6 +14,7 @@ class SRGANTrainOptions():
         self.parser.add_argument('--content_loss', default="mse", help="which content loss function to use for training")
         self.parser.add_argument('--adv_weight', type=float, default=1e-3, help="weight for adversarial loss")
         self.parser.add_argument('--lr', type=float, default=1e-4, help="initial learning rate for Adam optimizer")
+        self.parser.add_argument('--upscale_factor', type=int, default=4, help="upscale factor for images, should be power of 2")
         self.parser.add_argument('--total_iter', type=float, default=2e5, help="number of update iterations to train for")
         self.parser.add_argument('--iter_to_lr_decay', type=float, default=1e5, help="number of update iterations before decaying the lr")
         self.parser.add_argument('--min_size', type=int, default=128, help="scale images to this size before cropping")
@@ -38,6 +39,7 @@ class SRGANTestOptions():
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to test model")
         self.parser.add_argument('--device_id', type=int, default=0, help="GPU to use for testing")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")
+        self.parser.add_argument('--upscale_factor', type=int, default=4, help="upscale factor for images, should be power of 2")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")
         self.parser.add_argument('--mode', default="test", help="indicates testing mode")
 
@@ -59,6 +61,7 @@ class SRResNetTrainOptions():
         self.parser.add_argument('--content_loss', default="mse", help="which content loss function to use for training")
         self.parser.add_argument('--tv_weight', type=float, default=2e-8, help="weight for total variation loss when using Vgg loss")
         self.parser.add_argument('--lr', type=float, default=1e-4, help="learning rate for Adam optimizer")
+        self.parser.add_argument('--upscale_factor', type=int, default=4, help="upscale factor for images, should be power of 2")
         self.parser.add_argument('--num_iter', type=float, default=1e6, help="number of update iterations to train for")
         self.parser.add_argument('--min_size', type=int, default=128, help="scale images to this size before cropping")
         self.parser.add_argument('--crop_size', type=int, default=96, help="randomly crop images to this size")
@@ -81,6 +84,7 @@ class SRResNetTestOptions():
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to test model")
         self.parser.add_argument('--device_id', type=int, default=0, help="GPU to use for testing")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")
+        self.parser.add_argument('--upscale_factor', type=int, default=4, help="upscale factor for images, should be power of 2")
         self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")
         self.parser.add_argument('--mode', default="test", help="indicates testing mode")
 

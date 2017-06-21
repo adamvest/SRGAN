@@ -2,7 +2,7 @@ import helpers
 import torch
 import torch.nn as nn
 import torchvision.models as mod
-
+from numpy import log2
 
 class SRGAN():
     def __init__(self, args):
@@ -26,7 +26,7 @@ class SRGAN():
             if args.content_loss == "mse":
                 self.content_loss = nn.MSELoss()
             elif args.content_loss == "l1":
-                self.content_loss = L1Loss()
+                self.content_loss = nn.L1Loss()
             elif args.content_loss == "vgg":
                 self.content_loss = Vgg54Loss()
             else:
@@ -111,7 +111,7 @@ class SRResNet():
             if args.content_loss == "mse":
                 self.content_loss = nn.MSELoss()
             elif args.content_loss == "l1":
-                self.content_loss = L1Loss()
+                self.content_loss = nn.L1Loss()
             elif args.content_loss == "vgg":
                 self.content_loss = Vgg22WithTotalVariation(args.tv_weight)
             else:
@@ -168,7 +168,13 @@ class SRGAN_Generator(nn.Module):
 
         sequence = [nn.Conv2d(3, 64, kernel_size=9, padding=4), nn.PReLU()]
         sequence += [GeneratorResidualSubnet()]
-        sequence += [GeneratorPixelShuffleBlock(), GeneratorPixelShuffleBlock()]
+
+        num_shuffle_blocks = log2(args.upscale_factor)
+        assert num_shuffle_blocks.is_integer(), "Upscale factor should be a power of 2"
+
+        for i in range(int(num_shuffle_blocks)):
+            sequence += [GeneratorPixelShuffleBlock()]
+
         sequence += [nn.Conv2d(64, 3, kernel_size=9, padding=4)]
 
         self.generator = nn.Sequential(*sequence)
@@ -265,13 +271,44 @@ class DiscriminatorBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
 
+'''
+Fix this for autograd
+'''
+class SSIMLoss(nn.Module):
+    def __init__(self, r=2, k_1=.01, k_2=.03, window_size=5, num_channels=3):
+        super(SSIMLoss, self).__init__()
+        self.c_1 = (k_1 * r) ** 2
+        self.c_2 = (k_2 * r) ** 2
+        self.window_size = window_size
+        self.num_channels = num_channels
 
-class L1Loss(nn.Module):
-    def __init__(self):
-        super(L1Loss, self).__init__()
+    def extract_image_patches(self, sr_imgs, hr_imgs):
+        temp = sr_imgs.data.unfold(1, self.num_channels, 1).unfold(2, self.window_size, 1).unfold(3, self.window_size, 1)
+        sr_patches = temp.contiguous().view(-1, self.num_channels, self.window_size, self.window_size)
+        temp = hr_imgs.data.unfold(1, self.num_channels, 1).unfold(2, self.window_size, 1).unfold(3, self.window_size, 1)
+        hr_patches = temp.contiguous().view(-1, self.num_channels, self.window_size, self.window_size)
+        return (sr_patches, hr_patches)
+
+    def calculate_ssim(self, sr_imgs, hr_imgs):
+        ssim_vals = []
+        sr_patches, hr_patches = self.extract_image_patches(sr_imgs, hr_imgs)
+
+        for i in range(len(sr_patches)):
+            u_x = sr_patches[i].mean()
+            u_y = hr_patches[i].mean()
+            var_x = sr_patches[i].var()
+            var_y = hr_patches[i].var()
+            o_xy = ((sr_patches[i] - u_x) * (hr_patches[i] - u_y)).mean()
+
+            ssim_num = ((2 * u_x * u_y) + self.c_1) * ((2 * o_xy) + self.c_2)
+            ssim_den = (u_x ** 2 + u_y ** 2 + self.c_1) * (var_x + var_y + self.c_2)
+
+            ssim_vals.append(ssim_num / ssim_den)
+
+        return np.array(ssim_vals).mean()
 
     def __call__(self, sr_imgs, hr_imgs):
-        return torch.mean(torch.abs(sr_imgs - hr_imgs))
+        return 1 - self.calculate_ssim(sr_imgs, hr_imgs)
 
 
 class Vgg54Loss(nn.Module):

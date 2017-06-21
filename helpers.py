@@ -27,13 +27,13 @@ def compute_statistics(sr_img, hr_img, r=2):
 
     cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0])))
     cropped_hr_img = center_crop(to_pil(hr_img))
-    cropped_sr_img, _, _ = cropped_sr_img.convert("YCbCr").split()
-    cropped_hr_img, _, _ = cropped_hr_img.convert("YCbCr").split()
-    cropped_sr_img = normalize(to_tensor(cropped_sr_img)).numpy()
-    cropped_hr_img = normalize(to_tensor(cropped_hr_img)).numpy()
+    sr_y, _, _ = cropped_sr_img.convert("YCbCr").split()
+    hr_y, _, _ = cropped_hr_img.convert("YCbCr").split()
+    sr_y = normalize(to_tensor(sr_y)).numpy()
+    hr_y = normalize(to_tensor(hr_y)).numpy()
 
-    psnr = measure.compare_psnr(cropped_hr_img, cropped_sr_img, data_range=r)
-    ssim = measure.compare_ssim(cropped_hr_img[0], cropped_sr_img[0], data_range=r)
+    psnr = measure.compare_psnr(hr_y, sr_y, data_range=r)
+    ssim = measure.compare_ssim(hr_y[0], sr_y[0], data_range=r)
 
     return (psnr, ssim)
 
