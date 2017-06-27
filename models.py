@@ -2,7 +2,10 @@ import helpers
 import torch
 import torch.nn as nn
 import torchvision.models as mod
+from torchvision import transforms
 from numpy import log2
+from PIL import Image
+
 
 class SRGAN():
     def __init__(self, args):
@@ -149,11 +152,30 @@ class SRResNet():
         else:
             raise ValueError("SRResNet not declared in test mode")
 
-    def get_model(self):
-        return self.model
+    def save_test_image(self):
+        to_pil = transforms.ToPILImage()
+        to_tensor = transforms.ToTensor()
 
-    def save_model(self):
-        torch.save(self.model.state_dict(), "%s/srresnet_weights.pth" % self.args. out_folder)
+        lr_img = torch.autograd.Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")), volatile=True)
+
+        if self.args.use_cuda:
+            lr_img.cuda(device_id=self.args.device_id)
+        
+        sr_img = self.model(lr_img.unsqueeze(0))
+
+        if self.args.use_cuda:
+            sr_img = sr_img.data[0].cpu()
+            self.model.cuda(device_id=self.args.device_id)
+
+        sr_img = to_pil(helpers.unnormalize(sr_img.clamp(min=-1, max=1)))
+        sr_img.save("%s/sr_img.png" % self.args.out_folder)
+
+    def save_model(self, continue_training=True):
+        self.model.cpu()
+        torch.save(self.model.state_dict(), "%s/srresnet_weights_garbage.pth" % self.args. out_folder)
+        
+        if continue_training:
+            self.model.cuda(device_id=self.args.device_id)
 
     def to_cuda(self):
         self.model.cuda(device_id=self.args.device_id)
@@ -270,46 +292,6 @@ class DiscriminatorBlock(nn.Module):
 
     def forward(self, x):
         return self.block(x)
-
-
-'''
-Fix this for autograd
-'''
-class SSIMLoss(nn.Module):
-    def __init__(self, r=2, k_1=.01, k_2=.03, window_size=5, num_channels=3):
-        super(SSIMLoss, self).__init__()
-        self.c_1 = (k_1 * r) ** 2
-        self.c_2 = (k_2 * r) ** 2
-        self.window_size = window_size
-        self.num_channels = num_channels
-
-    def extract_image_patches(self, sr_imgs, hr_imgs):
-        temp = sr_imgs.data.unfold(1, self.num_channels, 1).unfold(2, self.window_size, 1).unfold(3, self.window_size, 1)
-        sr_patches = temp.contiguous().view(-1, self.num_channels, self.window_size, self.window_size)
-        temp = hr_imgs.data.unfold(1, self.num_channels, 1).unfold(2, self.window_size, 1).unfold(3, self.window_size, 1)
-        hr_patches = temp.contiguous().view(-1, self.num_channels, self.window_size, self.window_size)
-        return (sr_patches, hr_patches)
-
-    def calculate_ssim(self, sr_imgs, hr_imgs):
-        ssim_vals = []
-        sr_patches, hr_patches = self.extract_image_patches(sr_imgs, hr_imgs)
-
-        for i in range(len(sr_patches)):
-            u_x = sr_patches[i].mean()
-            u_y = hr_patches[i].mean()
-            var_x = sr_patches[i].var()
-            var_y = hr_patches[i].var()
-            o_xy = ((sr_patches[i] - u_x) * (hr_patches[i] - u_y)).mean()
-
-            ssim_num = ((2 * u_x * u_y) + self.c_1) * ((2 * o_xy) + self.c_2)
-            ssim_den = (u_x ** 2 + u_y ** 2 + self.c_1) * (var_x + var_y + self.c_2)
-
-            ssim_vals.append(ssim_num / ssim_den)
-
-        return np.array(ssim_vals).mean()
-
-    def __call__(self, sr_imgs, hr_imgs):
-        return 1 - self.calculate_ssim(sr_imgs, hr_imgs)
 
 
 class Vgg54Loss(nn.Module):

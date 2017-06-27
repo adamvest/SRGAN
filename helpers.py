@@ -1,6 +1,6 @@
 from PIL import Image
 from skimage import measure
-from numpy import sqrt
+from numpy import sqrt, log10
 from torch import nn
 from torch.autograd import Variable
 from torchvision import transforms
@@ -37,6 +37,21 @@ def compute_statistics(sr_img, hr_img, r=2):
     return (psnr, ssim)
 
 
+def compute_rgb_psnr(sr_img, hr_img, r=2):
+    mse_loss = nn.MSELoss()
+    to_pil = transforms.ToPILImage()
+    to_tensor = transforms.ToTensor()
+
+    cropped_sr_img = center_crop(to_pil(unnormalize(sr_img.data[0].clamp(-1, 1))))
+    cropped_hr_img = center_crop(to_pil(hr_img))
+    cropped_sr_img = Variable(normalize(to_tensor(cropped_sr_img)))
+    cropped_hr_img = Variable(normalize(to_tensor(cropped_hr_img)))
+
+    mse = mse_loss(cropped_sr_img, cropped_hr_img).data[0]
+
+    return 10 * log10((r**2)/mse)
+
+
 def unnormalize(img):
     return img.mul(.5).add(.5)
 
@@ -51,30 +66,6 @@ def center_crop(img, border=8):
     l, r = (w - n_w) / 2, (w + n_w) / 2
     t, b = (h - n_h) / 2, (h + n_h) / 2
     return img.crop((l, t, r, b))
-
-
-def save_images(model, args):
-    to_pil = transforms.ToPILImage()
-    to_tensor = transforms.ToTensor()
-
-    hr_img = Image.open("./Set5/image_SRF_4/img_003_SRF_4_HR.png")
-    lr_img = Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")), volatile=True)
-
-    if args.use_cuda:
-        lr_img = lr_img.cuda()
-
-    sr_img = model(lr_img.unsqueeze(0))
-
-    if args.use_cuda:
-        sr_img = sr_img.data[0].cpu()
-        lr_img = lr_img.data.cpu()
-
-    sr_img = to_pil(unnormalize(sr_img.clamp(min=-1, max=1)))
-    lr_img = to_pil(lr_img)
-
-    hr_img.save("%s/hr_img.png" % args.out_folder)
-    lr_img.save("%s/lr_img.png" % args.out_folder)
-    sr_img.save("%s/sr_img.png" % args.out_folder)
 
 
 def save_sr_results(args, dataset_name, sr_imgs):

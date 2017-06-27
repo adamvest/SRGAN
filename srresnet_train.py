@@ -52,8 +52,8 @@ for epoch in range(1, num_epochs + 1):
         if num_iter >= args.num_iter:
             break
 
-    srresnet.save_model()
-    helpers.save_images(srresnet.get_model(), args)
+    srresnet.save_model(False)
+    srresnet.save_test_image()
     minutes = int(time.time() - epoch_start_time) / 60
     print "\nEpoch time: " + str(minutes) + " minutes\n"
 

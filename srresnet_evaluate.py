@@ -16,13 +16,14 @@ if args.use_cuda:
 datasets = data.build_evaluation_dataset(args)
 
 for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
-    total_psnr, total_ssim = 0.0, 0.0
+    total_psnr, total_ssim, rgb_psnr = 0.0, 0.0, 0.0
     sr_imgs = []
 
     for i in range(len(lr_imgs)):
         lr_img = Variable(lr_imgs[i].unsqueeze(0), volatile=True)
         sr_img = srresnet.super_resolve(lr_img)
         sr_imgs.append(sr_img.data[0])
+        rgb_psnr += helpers.compute_rgb_psnr(sr_img, hr_imgs[i])
         psnr, ssim = helpers.compute_statistics(sr_img, hr_imgs[i])
         total_psnr += psnr
         total_ssim += ssim
@@ -30,4 +31,4 @@ for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
 
     helpers.save_sr_results(args, dataset_name, sr_imgs)
     print "Dataset " + dataset_name + " PSNR: " + str(total_psnr / len(lr_imgs)) + \
-            " SSIM: " + str(total_ssim / len(lr_imgs))
+            " SSIM: " + str(total_ssim / len(lr_imgs)) + " RGB PSNR: " + str(rgb_psnr / len(lr_imgs))
