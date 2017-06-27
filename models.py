@@ -132,8 +132,7 @@ class SRResNet():
 
             self.model.zero_grad()
             sr_imgs = self.model(lr_imgs)
-            normalized_sr_imgs = helpers.normalize(sr_imgs)
-            loss = self.content_loss(normalized_sr_imgs, hr_imgs)
+            loss = self.content_loss(sr_imgs, hr_imgs)
             loss.backward()
             self.opt.step()
 
@@ -146,9 +145,9 @@ class SRResNet():
         if self.args.mode == "test":
             if self.args.use_cuda:
                 lr_img = lr_img.cuda(device_id=self.args.device_id)
-                return helpers.normalize(self.model(lr_img).cpu())
+                return self.model(lr_img).cpu()
             else:
-                return helpers.normalize(self.model(lr_img))
+                return self.model(lr_img)
         else:
             raise ValueError("SRResNet not declared in test mode")
 
@@ -160,20 +159,20 @@ class SRResNet():
 
         if self.args.use_cuda:
             lr_img.cuda(device_id=self.args.device_id)
-        
+
         sr_img = self.model(lr_img.unsqueeze(0))
 
         if self.args.use_cuda:
-            sr_img = sr_img.data[0].cpu()
+            sr_img = sr_img.cpu()
             self.model.cuda(device_id=self.args.device_id)
 
-        sr_img = to_pil(helpers.unnormalize(sr_img.clamp(min=-1, max=1)))
+        sr_img = to_pil(sr_img.data[0].clamp(min=0, max=1))
         sr_img.save("%s/sr_img.png" % self.args.out_folder)
 
     def save_model(self, continue_training=True):
         self.model.cpu()
         torch.save(self.model.state_dict(), "%s/srresnet_weights_garbage.pth" % self.args. out_folder)
-        
+
         if continue_training:
             self.model.cuda(device_id=self.args.device_id)
 

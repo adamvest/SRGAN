@@ -3,7 +3,7 @@ from numpy import random
 from PIL import Image
 from torch import stack
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor, ToPILImage, Scale, Normalize
+from torchvision.transforms import ToTensor, ToPILImage, Scale
 
 
 class BSD100Dataset(Dataset):
@@ -22,7 +22,7 @@ class BSD100Dataset(Dataset):
         img = Image.open(path)
         (w, h) = img.size
 
-        if w < 128 or h < 128:
+        if w < self.args.min_size or h < self.args.min_size:
             img = self.scale(img)
 
         if self.transform != None:
@@ -57,7 +57,7 @@ class ImagenetDataset(Dataset):
         img = Image.open(path)
         (w, h) = img.size
 
-        if w < 128 or h < 128:
+        if w < self.args.min_size or h < self.args.min_size:
             img = self.scale(img)
 
         if self.transform != None:
@@ -127,7 +127,6 @@ def open_image(root, fname):
 def custom_collate(batch):
     to_pil = ToPILImage()
     to_tensor = ToTensor()
-    normalize = Normalize((.5, .5, .5), (.5, .5, .5))
 
     hr_imgs, lr_imgs = [], []
     num_images, num_channels, dim, _ = batch[0].size()
@@ -135,7 +134,7 @@ def custom_collate(batch):
     for i in range(len(batch)):
         lr_batch = [to_tensor(to_pil(image).resize((dim/4, dim/4), Image.BICUBIC)) for image in batch[i]]
         lr_imgs.append(stack(lr_batch))
-        hr_imgs.append(normalize(batch[i]))
+        hr_imgs.append(batch[i])
 
     hr_imgs = stack(hr_imgs).view(len(batch) * num_images, num_channels, dim, dim)
     lr_imgs = stack(lr_imgs).view(len(batch) * num_images, num_channels, dim/4, dim/4)
