@@ -6,14 +6,14 @@ import options, data, models, helpers
 from torch import cuda
 from torch.autograd import Variable
 
+
 args = options.SRResNetTestOptions().parse()
+datasets = data.build_evaluation_dataset(args)
 srresnet = models.SRResNet(args)
 
 if args.use_cuda:
     cuda.manual_seed(args.seed)
     srresnet.to_cuda()
-
-datasets = data.build_evaluation_dataset(args)
 
 for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
     total_psnr, total_ssim, rgb_psnr = 0.0, 0.0, 0.0

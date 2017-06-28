@@ -55,7 +55,7 @@ for epoch in range(1, num_epochs + 1):
             break
 
     srgan.save_models()
-    helpers.save_images(srgan.get_generator(), args)
+    srgan.save_test_image()
     minutes = int(time.time() - epoch_start_time) / 60
     print "\nEpoch time: " + str(minutes) + " minutes\n"
 

@@ -53,14 +53,13 @@ class SRGAN():
             self.labels.data.resize_(hr_imgs.size(0)).fill_(1)
             output = self.discriminator(hr_imgs)
             loss_d1 = self.adversarial_loss(output, self.labels)
-            loss_d1.backward()
 
             self.labels.data.resize_(lr_imgs.size(0)).fill_(0)
             sr_imgs = self.generator(lr_imgs)
             output = self.discriminator(sr_imgs.detach())
             loss_d2 = self.adversarial_loss(output, self.labels)
-            loss_d2.backward()
             loss_d = loss_d1 + loss_d2
+            loss_d.backward()
             self.disc_opt.step()
 
             #train generator
@@ -79,16 +78,38 @@ class SRGAN():
 
     def super_resolve(self, lr_img):
         if self.args.mode == "test":
-            return self.generator(lr_img)
+            if self.args.use_cuda:
+                lr_img = lr_img.cuda(device_id=self.args.device_id)
+                return self.generator(lr_img).cpu()
+            else:
+                return self.generator(lr_img)
         else:
             raise ValueError("SRGAN not declared in test mode")
 
-    def get_generator(self):
-        return self.generator
+    def save_test_image(self):
+        to_pil = transforms.ToPILImage()
+        to_tensor = transforms.ToTensor()
+
+        lr_img = torch.autograd.Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")), volatile=True)
+
+        if self.args.use_cuda:
+            lr_img.cuda(device_id=self.args.device_id)
+
+        sr_img = self.model(lr_img.unsqueeze(0))
+
+        if self.args.use_cuda:
+            sr_img = sr_img.cpu()
+
+        sr_img = to_pil(sr_img.data[0].clamp(min=0, max=1))
+        sr_img.save("%s/sr_img.png" % self.args.out_folder)
 
     def save_models(self):
+        self.generator.cpu()
+        self.discriminator.cpu()
         torch.save(self.generator.state_dict(), "%s/generator_weights.pth" % self.args.out_folder)
         torch.save(self.discriminator.state_dict(), "%s/discriminator_weights.pth" % self.args.out_folder)
+        self.generator.cuda()
+        self.discriminator.cuda()
 
     def to_cuda(self):
         self.generator.cuda()
@@ -164,17 +185,14 @@ class SRResNet():
 
         if self.args.use_cuda:
             sr_img = sr_img.cpu()
-            self.model.cuda(device_id=self.args.device_id)
 
         sr_img = to_pil(sr_img.data[0].clamp(min=0, max=1))
         sr_img.save("%s/sr_img.png" % self.args.out_folder)
 
-    def save_model(self, continue_training=True):
+    def save_model(self):
         self.model.cpu()
-        torch.save(self.model.state_dict(), "%s/srresnet_weights_garbage.pth" % self.args. out_folder)
-
-        if continue_training:
-            self.model.cuda(device_id=self.args.device_id)
+        torch.save(self.model.state_dict(), "%s/srresnet_weights.pth" % self.args. out_folder)
+        self.model.cuda(device_id=self.args.device_id)
 
     def to_cuda(self):
         self.model.cuda(device_id=self.args.device_id)

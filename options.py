@@ -11,6 +11,7 @@ class SRGANTrainOptions():
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to train model")
         self.parser.add_argument('--device_id', type=int, default=0, help="GPU to use for training")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")
+        self.parser.add_argument('--batch_size', type=int, default=1, help="training batch size")
         self.parser.add_argument('--content_loss', default="mse", help="which content loss function to use for training")
         self.parser.add_argument('--adv_weight', type=float, default=1e-3, help="weight for adversarial loss")
         self.parser.add_argument('--lr', type=float, default=1e-4, help="initial learning rate for Adam optimizer")
