@@ -48,6 +48,10 @@ class SRGAN():
 
     def train_on_batch(self, epoch, num_epochs, batch_num, num_batches, hr_imgs, lr_imgs):
         if self.args.mode == "train":
+            if self.args.use_cuda:
+                hr_imgs = hr_imgs.cuda(device_id=self.args.device_id)
+                lr_imgs = lr_imgs.cuda(device_id=self.args.device_id)
+
             #train discriminator
             self.discriminator.zero_grad()
             self.labels.data.resize_(hr_imgs.size(0)).fill_(1)
@@ -108,17 +112,17 @@ class SRGAN():
         self.discriminator.cpu()
         torch.save(self.generator.state_dict(), "%s/generator_weights.pth" % self.args.out_folder)
         torch.save(self.discriminator.state_dict(), "%s/discriminator_weights.pth" % self.args.out_folder)
-        self.generator.cuda()
-        self.discriminator.cuda()
+        self.generator.cuda(device_id=self.args.device_id)
+        self.discriminator.cuda(device_id=self.args.device_id)
 
     def to_cuda(self):
-        self.generator.cuda()
+        self.generator.cuda(device_id=self.args.device_id)
 
         if self.args.mode == "train":
-            self.discriminator.cuda()
-            self.labels.cuda()
-            self.adversarial_loss.cuda()
-            self.content_loss.cuda()
+            self.discriminator.cuda(device_id=self.args.device_id)
+            self.labels.cuda(device_id=self.args.device_id)
+            self.adversarial_loss.cuda(device_id=self.args.device_id)
+            self.content_loss.cuda(device_id=self.args.device_id)
 
 
 class SRResNet():
@@ -171,6 +175,10 @@ class SRResNet():
                 return self.model(lr_img)
         else:
             raise ValueError("SRResNet not declared in test mode")
+
+    def anneal_lr(self, val=10):
+        self.args.lr /= val
+        self.opt = torch.optim.Adam(self.model.parameters(), lr=self.args.lr)
 
     def save_test_image(self):
         to_pil = transforms.ToPILImage()
