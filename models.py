@@ -15,14 +15,14 @@ class SRGAN():
         if args.gen == "":
             self.generator.apply(helpers.weights_init)
         else:
-            self.generator.load_state_dict(torch.load(args.gen, map_location=lambda storage, loc: storage))
+            self.generator.load_state_dict(torch.load(args.gen))
 
         if args.mode == "train":
             self.discriminator = SRGAN_Discriminator(args)
             if args.disc == "":
                 self.discriminator.apply(helpers.weights_init)
             else:
-                self.discriminator.load_state_dict(torch.load(args.disc, map_location=lambda storage, loc: storage))
+                self.discriminator.load_state_dict(torch.load(args.disc))
 
             self.adversarial_loss = nn.BCELoss()
 
@@ -84,9 +84,8 @@ class SRGAN():
         if self.args.mode == "test":
             if self.args.use_cuda:
                 lr_img = lr_img.cuda(device_id=self.args.device_id)
-                return self.generator(lr_img).cpu()
-            else:
-                return self.generator(lr_img)
+
+            return self.generator(lr_img).cpu() if lr_img.is_cuda else self.generator(lr_img)
         else:
             raise ValueError("SRGAN not declared in test mode")
 
@@ -94,12 +93,13 @@ class SRGAN():
         to_pil = transforms.ToPILImage()
         to_tensor = transforms.ToTensor()
 
-        lr_img = torch.autograd.Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")), volatile=True)
+        lr_img = to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")).unsqueeze(0)
+        lr_img = torch.autograd.Variable(lr_img, volatile=True)
 
         if self.args.use_cuda:
-            lr_img.cuda(device_id=self.args.device_id)
+            lr_img = lr_img.cuda(device_id=self.args.device_id)
 
-        sr_img = self.model(lr_img.unsqueeze(0))
+        sr_img = self.generator(lr_img)
 
         if self.args.use_cuda:
             sr_img = sr_img.cpu()
@@ -133,7 +133,7 @@ class SRResNet():
         if args.model == "":
             self.model.apply(helpers.weights_init)
         else:
-            self.model.load_state_dict(torch.load(args.model, map_location=lambda storage, loc: storage))
+            self.model.load_state_dict(torch.load(args.model))
 
         if args.mode == "train":
             if args.content_loss == "mse":
@@ -170,9 +170,8 @@ class SRResNet():
         if self.args.mode == "test":
             if self.args.use_cuda:
                 lr_img = lr_img.cuda(device_id=self.args.device_id)
-                return self.model(lr_img).cpu()
-            else:
-                return self.model(lr_img)
+
+            return self.model(lr_img).cpu() if lr_img.is_cuda else self.model(lr_img)
         else:
             raise ValueError("SRResNet not declared in test mode")
 
