@@ -184,12 +184,13 @@ class SRResNet():
         to_pil = transforms.ToPILImage()
         to_tensor = transforms.ToTensor()
 
-        lr_img = torch.autograd.Variable(to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")), volatile=True)
+        lr_img = to_tensor(Image.open("./Set5/image_SRF_4/img_003_SRF_4_LR.png")).unsqueeze(0)
+        lr_img = torch.autograd.Variable(lr_img, volatile=True)
 
         if self.args.use_cuda:
-            lr_img.cuda(device_id=self.args.device_id)
+            lr_img = lr_img.cuda(device_id=self.args.device_id)
 
-        sr_img = self.model(lr_img.unsqueeze(0))
+        sr_img = self.model(lr_img)
 
         if self.args.use_cuda:
             sr_img = sr_img.cpu()
