@@ -54,11 +54,11 @@ class SRGAN():
 
             #train discriminator
             self.discriminator.zero_grad()
-            self.labels.data.resize_(hr_imgs.size(0)).fill_(1)
+            self.labels.data.resize_(hr_imgs.size(0), 1).fill_(1)
             output = self.discriminator(hr_imgs)
             loss_d1 = self.adversarial_loss(output, self.labels)
 
-            self.labels.data.resize_(lr_imgs.size(0)).fill_(0)
+            self.labels.data.resize_(lr_imgs.size(0), 1).fill_(0)
             sr_imgs = self.generator(lr_imgs)
             output = self.discriminator(sr_imgs.detach())
             loss_d2 = self.adversarial_loss(output, self.labels)
@@ -120,7 +120,7 @@ class SRGAN():
 
         if self.args.mode == "train":
             self.discriminator.cuda(device_id=self.args.device_id)
-            self.labels.cuda(device_id=self.args.device_id)
+            self.labels = self.labels.cuda(device_id=self.args.device_id)
             self.adversarial_loss.cuda(device_id=self.args.device_id)
             self.content_loss.cuda(device_id=self.args.device_id)
 
