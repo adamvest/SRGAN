@@ -57,13 +57,13 @@ class SRGAN():
             self.labels.data.resize_(hr_imgs.size(0), 1).fill_(1)
             output = self.discriminator(hr_imgs)
             loss_d1 = self.adversarial_loss(output, self.labels)
+            loss_d1.backward()
 
             self.labels.data.resize_(lr_imgs.size(0), 1).fill_(0)
             sr_imgs = self.generator(lr_imgs)
             output = self.discriminator(sr_imgs.detach())
             loss_d2 = self.adversarial_loss(output, self.labels)
-            loss_d = loss_d1 + loss_d2
-            loss_d.backward()
+            loss_d2.backward()
             self.disc_opt.step()
 
             #train generator
@@ -75,8 +75,8 @@ class SRGAN():
             loss_g.backward()
             self.gen_opt.step()
 
-            print("[%d/%d][%d/%d] Loss_Gen: %.4f Loss_Disc: %.4f"
-                    % (epoch, num_epochs, batch_num + 1, num_batches, loss_g.data[0], loss_d.data[0]))
+            print("[%d/%d][%d/%d] Loss_Gen: %.4f Real_Loss_Disc: %.4f, Fake_Loss_Disc: %.4f"
+                    % (epoch, num_epochs, batch_num + 1, num_batches, loss_g.data[0], loss_d1.data[0], loss_d2.data[0]))
         else:
             raise ValueError("SRGAN not declared in train mode")
 

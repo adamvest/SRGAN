@@ -35,13 +35,13 @@ class SRGANTestOptions():
     def __init__(self):
         self.parser = argparse.ArgumentParser()
 
-        self.parser.add_argument('--gen', requried=True, help="path to generator weights")
+        self.parser.add_argument('--gen', required=True, help="path to generator weights")
         self.parser.add_argument('--test_path', default=".", help="path to test sets")
         self.parser.add_argument('--use_cuda', type=int, default=0, help="use GPU to test model")
         self.parser.add_argument('--device_id', type=int, default=0, help="GPU to use for testing")
         self.parser.add_argument('--seed', type=int, default=21, help="random seed")
         self.parser.add_argument('--upscale_factor', type=int, default=4, help="upscale factor for images, should be power of 2")
-        self.parser.add_argument('--out_folder', default="./srresnet_out", help="directory to store results")
+        self.parser.add_argument('--out_folder', default="./srgan_out", help="directory to store results")
         self.parser.add_argument('--mode', default="test", help="indicates testing mode")
 
     def parse(self):

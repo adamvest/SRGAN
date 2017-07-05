@@ -13,7 +13,7 @@ srgan = models.SRGAN(args)
 
 if args.use_cuda:
     cuda.manual_seed(args.seed)
-    srresnet.to_cuda()
+    srgan.to_cuda()
 
 for dataset_name, (hr_imgs, lr_imgs) in datasets.iteritems():
     total_psnr, total_ssim, rgb_psnr = 0.0, 0.0, 0.0
