@@ -2,8 +2,7 @@
 Implementation of SRGAN and SRResNet as defined in [Ledig et. al](https://arxiv.org/abs/1609.04802)
 
 ## SRResNet Results
-|          | Ours          | Reported     |
-| Dataset  | PSNR   | SSIM | PSNR  | SSIM |
+| Dataset  | PSNR (Ours) | SSIM (Ours) | PSNR (Reported)  | SSIM  (Reported) |
 |:--------:|:------:|:----:|:-----:|:----:|
 | Set5     | 30.598 | .889 | 32.05 | .902 |
 | Set14    | 27.228 | .780 | 28.49 | .818 |
@@ -11,8 +10,7 @@ Implementation of SRGAN and SRResNet as defined in [Ledig et. al](https://arxiv.
 | Urban100 | 24.683 | .780 | N/A   | N/A  |
 
 ## SRGAN Results
-|          | Ours          | Reported     |
-| Dataset  | PSNR   | SSIM | PSNR  | SSIM |
+| Dataset  | PSNR (Ours) | SSIM (Ours) | PSNR (Reported)  | SSIM  (Reported) |
 |:--------:|:------:|:----:|:-----:|:----:|
 | Set5     | 28.650 | .800 | 29.40 | .847 |
 | Set14    | 25.719 | .681 | 26.02 | .740 |
