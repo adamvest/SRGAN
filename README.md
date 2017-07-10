@@ -1,14 +1,23 @@
 # SRGAN
 Implementation of SRGAN and SRResNet as defined in [Ledig et. al](https://arxiv.org/abs/1609.04802)
-* Note: Still in development
 
 ## SRResNet Results
-| Dataset  | PSNR   | SSIM |
-|:--------:|:------:|:----:|
-| Set5     | 30.598 | .889 |
-| Set14    | 27.228 | .780 |
-| BSD100   | 26.191 | .735 |
-| Urban100 | 24.683 | .780 |
+|          | Ours          | Reported     |
+| Dataset  | PSNR   | SSIM | PSNR  | SSIM |
+|:--------:|:------:|:----:|:-----:|:----:|
+| Set5     | 30.598 | .889 | 32.05 | .902 |
+| Set14    | 27.228 | .780 | 28.49 | .818 |
+| BSD100   | 26.191 | .735 | 27.58 | .762 |
+| Urban100 | 24.683 | .780 | N/A   | N/A  |
+
+## SRGAN Results
+|          | Ours          | Reported     |
+| Dataset  | PSNR   | SSIM | PSNR  | SSIM |
+|:--------:|:------:|:----:|:-----:|:----:|
+| Set5     | 28.650 | .800 | 29.40 | .847 |
+| Set14    | 25.719 | .681 | 26.02 | .740 |
+| BSD100   | 24.722 | .620 | 25.15 | .669 |
+| Urban100 | 23.259 | .668 | N/A   | N/A  |
 
 ## Requirements
 * Pytorch
