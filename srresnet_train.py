@@ -31,7 +31,7 @@ data_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_
 
 iter_per_epoch = len(data_loader)
 num_epochs = int(ceil(args.num_iter / iter_per_epoch))
-num_iter = 0
+num_iter, iter_since_anneal = 0, 0
 
 srresnet = models.SRResNet(args)
 
@@ -48,9 +48,14 @@ for epoch in range(1, num_epochs + 1):
         lr_imgs = Variable(lr_imgs)
 
         srresnet.train_on_batch(epoch, num_epochs, batch_num, iter_per_epoch, hr_imgs, lr_imgs)
+        iter_since_anneal += 1
 
         if num_iter >= args.num_iter:
             break
+
+        if iter_since_anneal == args.iter_to_anneal:
+            iter_since_anneal = 0
+            srresnet.anneal_lr()
 
     srresnet.save_model()
     srresnet.save_test_image()
